@@ -1,0 +1,110 @@
+================================================================================
+WORKFORCE HUB - PROJECT STRUCTURE
+================================================================================
+
+BACKEND STRUCTURE (Spring Boot)
+================================================================================
+
+backend/
+├── pom.xml                          Maven dependencies
+├── src/main/
+│   ├── java/com/workforce/workforcehub/
+│   │   ├── WorkforceHubApplication.java    Main class
+│   │   ├── config/                         Configuration classes
+│   │   │   ├── SecurityConfig.java         Security & JWT config
+│   │   │   ├── CorsConfig.java             CORS configuration
+│   │   │   ├── OpenApiConfig.java          Swagger setup
+│   │   │   ├── DataInitializer.java        Initial data
+│   │   │   └── SQLiteConfig.java           Database config
+│   │   ├── controller/                     REST API controllers
+│   │   │   ├── AuthController.java         Login/Register
+│   │   │   ├── EmployeeController.java     Employee CRUD
+│   │   │   ├── TaskController.java         Task management
+│   │   │   └── ExportController.java      PDF/Excel export
+│   │   ├── service/                        Business logic
+│   │   │   ├── AuthService.java
+│   │   │   ├── EmployeeService.java
+│   │   │   ├── TaskService.java
+│   │   │   └── ExportService.java
+│   │   ├── repository/                     Data access
+│   │   │   ├── EmployeeRepository.java
+│   │   │   ├── TaskRepository.java
+│   │   │   └── SubtaskRepository.java
+│   │   ├── entity/                         JPA entities
+│   │   │   ├── Employee.java
+│   │   │   ├── Task.java
+│   │   │   └── Subtask.java
+│   │   ├── dto/                            Data transfer objects
+│   │   │   ├── AuthResponse.java
+│   │   │   ├── LoginRequest.java
+│   │   │   ├── EmployeeRequest.java
+│   │   │   ├── EmployeeResponse.java
+│   │   │   ├── TaskRequest.java
+│   │   │   ├── TaskResponse.java
+│   │   │   ├── SubtaskRequest.java
+│   │   │   └── PagedResponse.java
+│   │   ├── security/                       Security components
+│   │   │   ├── JwtTokenProvider.java       JWT generation
+│   │   │   └── JwtAuthenticationFilter.java
+│   │   └── exception/                      Error handling
+│   │       └── GlobalExceptionHandler.java
+│   └── resources/
+│       └── application.yml                 Configuration
+
+FRONTEND STRUCTURE (Angular)
+================================================================================
+
+frontend/
+├── package.json                    NPM dependencies
+├── angular.json                    Angular config
+├── tsconfig.json                   TypeScript config
+├── src/
+│   ├── index.html                  Main HTML
+│   ├── main.ts                     Bootstrap
+│   ├── styles.css                  Global styles
+│   └── app/
+│       ├── app.config.ts           App configuration
+│       ├── app.routes.ts           Routing
+│       ├── app.component.ts        Root component
+│       ├── services/               HTTP services
+│       │   ├── auth.service.ts
+│       │   ├── employee.service.ts
+│       │   ├── task.service.ts
+│       │   └── export.service.ts
+│       ├── guards/                 Route protection
+│       │   └── auth.guard.ts
+│       ├── interceptors/           HTTP interceptors
+│       │   └── auth.interceptor.ts
+│       └── pages/                  Page components
+│           ├── login/
+│           ├── register/
+│           ├── dashboard/
+│           ├── employees/
+│           ├── employee-form/
+│           ├── tasks/
+│           ├── task-detail/
+│           └── profile/
+
+DATABASE
+================================================================================
+
+SQLite database file: employee.db (created automatically in backend folder)
+
+Tables created:
+- employees    (id, name, email, age, mobile, username, password, department, salary, role, manager_id)
+- tasks        (id, title, description, assigned_by, assigned_to, priority, status, deadline)
+- subtasks     (id, task_id, title, is_completed, notes)
+
+KEY FILES DESCRIPTION
+================================================================================
+
+1. pom.xml - Lists all Maven dependencies (Spring Boot, Security, JWT, iText, POI)
+2. application.yml - Spring Boot configuration (port, database, JWT settings)
+3. SecurityConfig.java - Sets up JWT authentication and role-based access
+4. JwtTokenProvider.java - Generates and validates JWT tokens
+5. EmployeeController.java - Exposes Employee CRUD APIs
+6. TaskController.java - Exposes Task management APIs
+7. auth.service.ts (Frontend) - Handles login/register/token storage
+8. auth.guard.ts - Protects routes from unauthenticated access
+
+================================================================================

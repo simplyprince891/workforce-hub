@@ -1,0 +1,155 @@
+================================================================================
+WORKFORCE HUB - API ENDPOINTS
+================================================================================
+
+BASE URL: http://localhost:8080/api
+
+AUTHENTICATION
+================================================================================
+
+POST /auth/register
+   Register new user
+   Body: { "name", "email", "age", "mobile", "username", "password", "department", "salary", "role", "managerId" }
+   Response: { "token", "username", "role", "employeeId", "name" }
+
+POST /auth/login
+   Login user
+   Body: { "username", "password" }
+   Response: { "token", "username", "role", "employeeId", "name" }
+
+GET /auth/me
+   Get current user (requires auth)
+   Response: EmployeeResponse
+
+EMPLOYEES
+================================================================================
+
+GET /employees
+   Get all employees with pagination
+   Query: ?page=0&size=10&sortBy=id&direction=asc
+   Response: PagedResponse<EmployeeResponse>
+
+GET /employees/{id}
+   Get employee by ID
+   Response: EmployeeResponse
+
+POST /employees
+   Create employee (ADMIN, MANAGER only)
+   Body: EmployeeRequest
+   Response: EmployeeResponse
+
+PUT /employees/{id}
+   Update employee (ADMIN, MANAGER only)
+   Body: EmployeeRequest
+   Response: EmployeeResponse
+
+DELETE /employees/{id}
+   Delete employee (ADMIN only)
+   Response: 204 No Content
+
+GET /employees/search
+   Search employees
+   Query: ?name=john&email=john@test.com&page=0&size=10
+
+GET /employees/filter/department
+   Filter by department
+   Query: ?department=IT&page=0&size=10
+
+GET /employees/filter/salary
+   Filter by salary range
+   Query: ?minSalary=10000&maxSalary=50000&page=0&size=10
+
+GET /employees/manager/{id}
+   Get employees by manager
+
+GET /employees/role/{role}
+   Get employees by role (ADMIN, MANAGER, TEAM_LEAD, EMPLOYEE)
+
+GET /employees/departments
+   Get all unique departments
+   Response: ["IT", "HR", "Finance", ...]
+
+TASKS
+================================================================================
+
+GET /tasks
+   Get all tasks with pagination
+   Query: ?page=0&size=10
+   Response: PagedResponse<TaskResponse>
+
+GET /tasks/{id}
+   Get task by ID
+   Response: TaskResponse
+
+POST /tasks
+   Create task (ADMIN, MANAGER only)
+   Body: TaskRequest
+   Response: TaskResponse
+
+PUT /tasks/{id}
+   Update task (ADMIN, MANAGER only)
+   Body: TaskRequest
+   Response: TaskResponse
+
+PATCH /tasks/{id}/status?status=DONE
+   Update task status
+   Response: TaskResponse
+
+DELETE /tasks/{id}
+   Delete task (ADMIN, MANAGER only)
+   Response: 204 No Content
+
+GET /tasks/employee/{id}
+   Get tasks assigned to employee
+
+GET /tasks/manager/{id}
+   Get tasks created by manager
+
+SUBTASKS
+================================================================================
+
+POST /tasks/subtasks
+   Add subtask to task
+   Body: { "taskId", "title", "isCompleted", "notes" }
+
+PUT /tasks/subtasks/{id}
+   Update subtask
+   Body: SubtaskRequest
+
+PATCH /tasks/subtasks/{id}/toggle
+   Toggle subtask completion
+
+DELETE /tasks/subtasks/{id}
+   Delete subtask
+
+EXPORT
+================================================================================
+
+GET /export/employees/pdf
+   Export employees to PDF (ADMIN, MANAGER)
+   Response: PDF file
+
+GET /export/tasks/pdf
+   Export tasks to PDF (ADMIN, MANAGER, TEAM_LEAD)
+   Response: PDF file
+
+GET /export/employees/excel
+   Export employees to Excel (ADMIN, MANAGER)
+   Response: Excel file
+
+GET /export/tasks/excel
+   Export tasks to Excel (ADMIN, MANAGER, TEAM_LEAD)
+   Response: Excel file
+
+SWAGGER DOCUMENTATION
+================================================================================
+After running backend, visit: http://localhost:8080/swagger-ui.html
+
+ROLE PERMISSIONS
+================================================================================
+ADMIN: All operations
+MANAGER: Employee create/update, Task create/assign, Export
+TEAM_LEAD: View tasks, Export
+EMPLOYEE: Update own task status, Manage subtasks
+
+================================================================================

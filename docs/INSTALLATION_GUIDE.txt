@@ -1,0 +1,119 @@
+================================================================================
+WORKFORCE HUB - INSTALLATION GUIDE
+================================================================================
+
+PREREQUISITES (Required Software)
+================================================================================
+
+1. Java JDK 17+
+   - Download: https://adoptium.net/
+   - Verify: java -version (in CMD)
+
+2. Apache Maven 3.8+
+   - Download: https://maven.apache.org/download.cgi
+   - Add to PATH: set PATH=%PATH%;C:\apache-maven\bin
+
+3. Node.js 18+ (for Angular)
+   - Download: https://nodejs.org/
+   - Verify: node -v
+
+4. Angular CLI
+   - Install: npm install -g @angular/cli
+   - Verify: ng version
+
+================================================================================
+SETUP STEPS (Run these in CMD, not PowerShell)
+================================================================================
+
+STEP 1: Extract Project
+-----------------------
+Extract the workforce-hub.zip to your desired location.
+Navigate to the project folder.
+
+STEP 2: Setup Backend
+---------------------
+cd backend
+mvn clean install
+
+To run backend:
+mvn spring-boot:run
+
+The backend will start at http://localhost:8080
+
+STEP 3: Setup Frontend
+----------------------
+Open a new CMD window.
+cd frontend
+
+Install dependencies:
+npm install --legacy-peer-deps
+
+To run frontend:
+npm start
+
+Frontend runs at http://localhost:4200
+
+STEP 4: Verify Setup
+--------------------
+Backend: http://localhost:8080/swagger-ui.html
+Frontend: http://localhost:4200
+
+Login with default admin:
+Username: admin
+Password: admin123
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If npm install fails:
+- Use: npm install --legacy-peer-deps
+
+If Maven fails:
+- Ensure JAVA_HOME is set to JDK 17 folder
+- Run CMD as administrator if needed
+
+If port 8080 or 4200 is busy:
+- Backend: Edit application.yml to change server.port
+- Frontend: Edit angular.json to change port
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+
+/workforce-hub
+  /backend          Spring Boot application
+    /src
+      /main/java
+        /config     Security, CORS, Swagger configs
+        /controller REST API endpoints
+        /service    Business logic
+        /repository Data access
+        /entity     JPA entities
+        /dto        Data transfer objects
+        /exception  Error handling
+        /security   JWT filter & provider
+  /frontend         Angular application
+    /src
+      /app
+        /pages     Page components
+        /services  HTTP services
+        /guards    Route guards
+        /interceptors HTTP interceptors
+  /docs             Documentation files
+
+================================================================================
+QUICK START COMMANDS
+================================================================================
+
+Backend:
+  cd backend
+  mvn spring-boot:run
+
+Frontend:
+  cd frontend
+  npm start
+
+Both must be running simultaneously for the app to work.
+
+================================================================================

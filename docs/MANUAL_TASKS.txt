@@ -1,0 +1,111 @@
+================================================================================
+WORKFORCE HUB - MANUAL TASKS
+================================================================================
+
+These tasks must be performed manually by the user to complete setup.
+
+================================================================================
+1. INSTALL DEPENDENCIES
+================================================================================
+
+Backend Dependencies (handled by Maven):
+- Automatically downloaded when running mvn clean install
+
+Frontend Dependencies:
+1. Open CMD in frontend folder
+2. Run: npm install --legacy-peer-deps
+3. Wait for installation to complete
+
+================================================================================
+2. RUN BACKEND
+================================================================================
+
+1. Open CMD in backend folder
+2. Run: mvn spring-boot:run
+3. Wait for "Started WorkforceHubApplication" message
+4. Backend runs at http://localhost:8080
+
+Tip: Keep this CMD window open while using the application.
+
+================================================================================
+3. RUN FRONTEND
+================================================================================
+
+1. Open a new CMD window (keep backend running)
+2. Navigate to frontend folder
+3. Run: npm start
+4. Wait for "Compiled successfully" message
+5. Frontend runs at http://localhost:4200
+
+================================================================================
+4. VERIFY SETUP
+================================================================================
+
+1. Open browser to http://localhost:4200
+2. Should see WorkForce Hub login page
+3. Login with: admin / admin123
+
+Test Backend:
+1. Visit http://localhost:8080/swagger-ui.html
+2. Try login endpoint: POST /api/auth/login
+   { "username": "admin", "password": "admin123" }
+
+================================================================================
+5. CREATE TEST DATA
+================================================================================
+
+After login as admin:
+1. Go to Employees page
+2. Add new employees with different roles (MANAGER, EMPLOYEE)
+3. Go to Tasks page
+4. Create tasks and assign to employees
+5. Test subtask functionality
+
+================================================================================
+6. TEST POSTMAN COLLECTION (Optional)
+================================================================================
+
+Import and test API endpoints:
+1. Open Postman
+2. Create new collection "WorkForce Hub"
+3. Add requests from API_ENDPOINTS.txt
+
+================================================================================
+COMMON ISSUES AND SOLUTIONS
+================================================================================
+
+Issue: Port 8080 already in use
+Solution: Change port in backend/src/main/resources/application.yml
+  server:
+    port: 8081
+
+Issue: Port 4200 already in use
+Solution: Change port in frontend/angular.json
+  "serve": { "options": { "port": 4201 } }
+
+Issue: SQLite database error
+Solution: Delete employee.db file in backend folder and restart
+
+Issue: Angular build errors
+Solution: Delete node_modules and reinstall
+  rm -rf node_modules
+  npm install --legacy-peer-deps
+
+Issue: CORS errors
+Solution: Backend CORS is configured to allow localhost:4200
+          If using different ports, update CorsConfig.java
+
+================================================================================
+FIRST TIME USAGE CHECKLIST
+================================================================================
+
+[ ] Backend is running on port 8080
+[ ] Frontend is running on port 4200
+[ ] Swagger UI accessible at http://localhost:8080/swagger-ui.html
+[ ] Login page loads at http://localhost:4200
+[ ] Admin login works (admin/admin123)
+[ ] Can create new employees
+[ ] Can create and assign tasks
+[ ] Can export data to PDF/Excel
+
+================================================================================
