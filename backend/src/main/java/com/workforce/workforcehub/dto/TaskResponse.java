@@ -24,4 +24,5 @@ public class TaskResponse {
     private LocalDate deadline;
     private LocalDateTime createdAt;
     private List<SubtaskResponse> subtasks;
+    private List<TaskCommentResponse> comments;
 }

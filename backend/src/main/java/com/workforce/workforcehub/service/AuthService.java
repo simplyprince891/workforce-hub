@@ -35,9 +35,9 @@ public class AuthService {
         employee.setMobile(request.getMobile());
         employee.setUsername(request.getUsername());
         employee.setPassword(passwordEncoder.encode(request.getPassword()));
-        employee.setDepartment(request.getDepartment());
-        employee.setSalary(request.getSalary());
-        employee.setRole(request.getRole() != null ? request.getRole() : "EMPLOYEE");
+        employee.setDepartment("Unassigned");
+        employee.setSalary(0.0);
+        employee.setRole("EMPLOYEE");
         
         if (request.getManagerId() != null) {
             Employee manager = employeeRepository.findById(request.getManagerId())
@@ -85,6 +85,8 @@ public class AuthService {
                 employee.getRole(),
                 employee.getManager() != null ? employee.getManager().getId() : null,
                 employee.getManagerName(),
+                employee.getTeam() != null ? employee.getTeam().getId() : null,
+                employee.getTeam() != null ? employee.getTeam().getName() : null,
                 employee.getCreatedAt(),
                 employee.getUpdatedAt()
         );

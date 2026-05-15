@@ -9,94 +9,84 @@ import { AuthService, EmployeeRequest } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="login-container">
-      <div class="login-card">
+    <div class="auth-container">
+      <div class="auth-card">
         <div class="text-center mb-4">
-          <h2 style="color: #1e3a5f; font-weight: 600;">Create Account</h2>
-          <p style="color: #64748b;">Join WorkForce Hub</p>
+          <h2 class="auth-title display-font">Join Us</h2>
+          <p class="auth-subtitle">Create your Workforce account</p>
         </div>
         
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
           <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-control" formControlName="name"
-                   [class.is-invalid]="registerForm.get('name')?.touched && registerForm.get('name')?.invalid">
-            <div class="invalid-feedback">Name is required (min 2 chars)</div>
+            <label class="stat-label mb-2 d-block">Full Name</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon"><i class="fas fa-user"></i></span>
+              <input type="text" class="form-control with-icon" formControlName="name"
+                     [class.is-invalid]="registerForm.get('name')?.touched && registerForm.get('name')?.invalid" placeholder="John Doe">
+            </div>
+            <div class="invalid-feedback small mt-1">Name is required (min 2 chars)</div>
           </div>
           
           <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" formControlName="email"
-                   [class.is-invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
-            <div class="invalid-feedback">Valid email is required</div>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Age</label>
-              <input type="number" class="form-control" formControlName="age"
-                     [class.is-invalid]="registerForm.get('age')?.touched && registerForm.get('age')?.invalid">
-              <div class="invalid-feedback">Age must be 18-60</div>
+            <label class="stat-label mb-2 d-block">Email Address</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon"><i class="fas fa-envelope"></i></span>
+              <input type="email" class="form-control with-icon" formControlName="email"
+                     [class.is-invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" placeholder="john@workforce.com">
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Mobile</label>
-              <input type="text" class="form-control" formControlName="mobile" maxlength="10"
-                     [class.is-invalid]="registerForm.get('mobile')?.touched && registerForm.get('mobile')?.invalid">
-              <div class="invalid-feedback">10 digit mobile required</div>
+            <div class="invalid-feedback small mt-1">Valid email is required</div>
+          </div>
+          
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="stat-label mb-2 d-block">Age</label>
+              <div class="input-icon-wrapper">
+                <span class="input-icon"><i class="fas fa-calendar-alt"></i></span>
+                <input type="number" class="form-control with-icon" formControlName="age"
+                       [class.is-invalid]="registerForm.get('age')?.touched && registerForm.get('age')?.invalid" placeholder="25">
+              </div>
             </div>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text" class="form-control" formControlName="username"
-                   [class.is-invalid]="registerForm.get('username')?.touched && registerForm.get('username')?.invalid">
-            <div class="invalid-feedback">Alphanumeric username required</div>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-control" formControlName="password"
-                   [class.is-invalid]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
-            <div class="invalid-feedback">Password is required</div>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Department</label>
-              <select class="form-select" formControlName="department">
-                <option value="">Select</option>
-                <option value="IT">IT</option>
-                <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Operations">Operations</option>
-              </select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Salary</label>
-              <input type="number" class="form-control" formControlName="salary">
+            <div class="col-6">
+              <label class="stat-label mb-2 d-block">Mobile</label>
+              <div class="input-icon-wrapper">
+                <span class="input-icon"><i class="fas fa-phone"></i></span>
+                <input type="text" class="form-control with-icon" formControlName="mobile" maxlength="10"
+                       [class.is-invalid]="registerForm.get('mobile')?.touched && registerForm.get('mobile')?.invalid" placeholder="1234567890">
+              </div>
             </div>
           </div>
           
           <div class="mb-3">
-            <label class="form-label">Role</label>
-            <select class="form-select" formControlName="role">
-              <option value="EMPLOYEE">Employee</option>
-              <option value="MANAGER">Manager</option>
-              <option value="TEAM_LEAD">Team Lead</option>
-            </select>
+            <label class="stat-label mb-2 d-block">Username</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon"><i class="fas fa-at"></i></span>
+              <input type="text" class="form-control with-icon" formControlName="username"
+                     [class.is-invalid]="registerForm.get('username')?.touched && registerForm.get('username')?.invalid" placeholder="johndoe">
+            </div>
           </div>
           
-          <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+          <div class="mb-4">
+            <label class="stat-label mb-2 d-block">Password</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control with-icon" formControlName="password"
+                     [class.is-invalid]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid" placeholder="••••••••">
+            </div>
+          </div>
           
-          <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
-            {{ loading ? 'Registering...' : 'Register' }}
+          <div *ngIf="error" class="custom-alert alert-danger mb-4">
+            <i class="fas fa-exclamation-triangle"></i> {{ error }}
+          </div>
+          
+          <button type="submit" class="btn-glow w-100" [disabled]="loading">
+            <span *ngIf="loading"><i class="fas fa-spinner fa-spin me-2"></i> Creating Account...</span>
+            <span *ngIf="!loading">Create Account</span>
           </button>
         </form>
         
-        <div class="text-center mt-3">
-          <p style="color: #64748b;">Already have an account? 
-            <a routerLink="/login" style="color: #1e3a5f;">Sign In</a>
+        <div class="text-center mt-5">
+          <p class="auth-link-text">Already have an account? 
+            <a routerLink="/login" class="auth-link">Sign In</a>
           </p>
         </div>
       </div>
@@ -115,10 +105,7 @@ export class RegisterComponent {
       age: ['', [Validators.required, Validators.min(18), Validators.max(60)]],
       mobile: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
-      password: ['', Validators.required],
-      department: ['', Validators.required],
-      salary: ['', Validators.required],
-      role: ['EMPLOYEE']
+      password: ['', Validators.required]
     });
   }
 
@@ -131,15 +118,18 @@ export class RegisterComponent {
     this.loading = true;
     this.error = '';
 
+    // Set defaults since they were removed from the form
     const data: EmployeeRequest = {
       ...this.registerForm.value,
       age: Number(this.registerForm.value.age),
-      salary: Number(this.registerForm.value.salary)
+      department: 'Unassigned',
+      salary: 0,
+      role: 'EMPLOYEE'
     };
 
     this.authService.register(data).subscribe({
       next: () => {
-        window.location.href = '/dashboard';
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.error = err.error?.message || 'Registration failed';

@@ -46,4 +46,5 @@ public class EmployeeRequest {
     private String role;
     
     private Long managerId;
+    private Long teamId;
 }

@@ -21,6 +21,8 @@ public class EmployeeResponse {
     private String role;
     private Long managerId;
     private String managerName;
+    private Long teamId;
+    private String teamName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

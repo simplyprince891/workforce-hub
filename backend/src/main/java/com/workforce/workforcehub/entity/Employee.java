@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -18,7 +20,7 @@ import java.time.LocalDateTime;
 public class Employee {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
     @NotBlank(message = "Name is required")
@@ -56,7 +58,13 @@ public class Employee {
     
     @NotBlank(message = "Role is required")
     private String role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
     
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee manager;
@@ -70,5 +78,10 @@ public class Employee {
     @Transient
     public String getManagerName() {
         return manager != null ? manager.getName() : null;
+    }
+
+    @Transient
+    public String getTeamName() {
+        return team != null ? team.getName() : null;
     }
 }

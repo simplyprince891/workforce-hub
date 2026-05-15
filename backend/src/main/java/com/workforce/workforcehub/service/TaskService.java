@@ -4,8 +4,10 @@ import com.workforce.workforcehub.dto.*;
 import com.workforce.workforcehub.entity.Employee;
 import com.workforce.workforcehub.entity.Subtask;
 import com.workforce.workforcehub.entity.Task;
+import com.workforce.workforcehub.entity.TaskComment;
 import com.workforce.workforcehub.repository.EmployeeRepository;
 import com.workforce.workforcehub.repository.SubtaskRepository;
+import com.workforce.workforcehub.repository.TaskCommentRepository;
 import com.workforce.workforcehub.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ public class TaskService {
     
     private final TaskRepository taskRepository;
     private final SubtaskRepository subtaskRepository;
+    private final TaskCommentRepository taskCommentRepository;
     private final EmployeeRepository employeeRepository;
     
     @Transactional
@@ -36,6 +39,9 @@ public class TaskService {
         
         Employee assignedTo = employeeRepository.findById(request.getAssignedToId())
                 .orElseThrow(() -> new RuntimeException("Assigned to employee not found"));
+        
+        validateAssignmentHierarchy(assignedBy, assignedTo);
+        
         task.setAssignedTo(assignedTo);
         
         if (task.getStatus() == null) {
@@ -62,6 +68,19 @@ public class TaskService {
         if (request.getAssignedToId() != null) {
             Employee assignedTo = employeeRepository.findById(request.getAssignedToId())
                     .orElseThrow(() -> new RuntimeException("Assigned to employee not found"));
+            
+            // For update, we need to know who is assigning it. 
+            // In a real app, this would be the current authenticated user.
+            // For now, we use assignedBy from the task or request.
+            Employee currentAssigner = task.getAssignedBy();
+            if (request.getAssignedById() != null) {
+                currentAssigner = employeeRepository.findById(request.getAssignedById()).orElse(currentAssigner);
+            }
+            
+            if (currentAssigner != null) {
+                validateAssignmentHierarchy(currentAssigner, assignedTo);
+            }
+            
             task.setAssignedTo(assignedTo);
         }
         
@@ -160,6 +179,20 @@ public class TaskService {
         
         subtask.setIsCompleted(!subtask.getIsCompleted());
         Subtask saved = subtaskRepository.save(subtask);
+        
+        // Auto-update parent task status if all subtasks are complete
+        Task task = saved.getTask();
+        List<Subtask> allSubtasks = subtaskRepository.findByTaskId(task.getId());
+        boolean allCompleted = !allSubtasks.isEmpty() && allSubtasks.stream().allMatch(Subtask::getIsCompleted);
+        
+        if (allCompleted && !task.getStatus().equals("DONE")) {
+            task.setStatus("DONE");
+            taskRepository.save(task);
+        } else if (!allCompleted && task.getStatus().equals("DONE")) {
+            task.setStatus("IN_PROGRESS");
+            taskRepository.save(task);
+        }
+        
         return mapToSubtaskResponse(saved);
     }
     
@@ -169,6 +202,29 @@ public class TaskService {
             throw new RuntimeException("Subtask not found");
         }
         subtaskRepository.deleteById(id);
+    }
+    
+    @Transactional
+    public TaskCommentResponse addComment(com.workforce.workforcehub.dto.TaskCommentRequest request) {
+        Task task = taskRepository.findById(request.getTaskId())
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        Employee author = employeeRepository.findById(request.getAuthorId())
+                .orElseThrow(() -> new RuntimeException("Author not found"));
+                
+        TaskComment comment = new TaskComment();
+        comment.setTask(task);
+        comment.setAuthor(author);
+        comment.setContent(request.getContent());
+        
+        return mapToCommentResponse(taskCommentRepository.save(comment));
+    }
+    
+    @Transactional
+    public void deleteComment(Long id) {
+        if (!taskCommentRepository.existsById(id)) {
+            throw new RuntimeException("Comment not found");
+        }
+        taskCommentRepository.deleteById(id);
     }
     
     public Long countTasksByEmployee(Long employeeId) {
@@ -201,6 +257,10 @@ public class TaskService {
         List<SubtaskResponse> subtasks = subtaskRepository.findByTaskId(task.getId()).stream()
                 .map(this::mapToSubtaskResponse)
                 .collect(Collectors.toList());
+                
+        List<TaskCommentResponse> comments = taskCommentRepository.findByTaskIdOrderByCreatedAtDesc(task.getId()).stream()
+                .map(this::mapToCommentResponse)
+                .collect(Collectors.toList());
         
         return new TaskResponse(
                 task.getId(),
@@ -214,7 +274,8 @@ public class TaskService {
                 task.getStatus(),
                 task.getDeadline(),
                 task.getCreatedAt(),
-                subtasks
+                subtasks,
+                comments
         );
     }
     
@@ -227,5 +288,39 @@ public class TaskService {
                 subtask.getNotes(),
                 subtask.getCreatedAt()
         );
+    }
+    
+    private TaskCommentResponse mapToCommentResponse(TaskComment comment) {
+        return new TaskCommentResponse(
+                comment.getId(),
+                comment.getTask().getId(),
+                comment.getAuthor().getId(),
+                comment.getAuthor().getName(),
+                comment.getAuthor().getRole(),
+                comment.getContent(),
+                comment.getCreatedAt() != null ? comment.getCreatedAt().toString() : null
+        );
+    }
+    private void validateAssignmentHierarchy(Employee assignedBy, Employee assignedTo) {
+        String byRole = assignedBy.getRole();
+        String toRole = assignedTo.getRole();
+        
+        if (byRole.equals("ADMIN")) return;
+        
+        if (byRole.equals("MANAGER")) {
+            if (toRole.equals("ADMIN") || toRole.equals("MANAGER")) {
+                throw new RuntimeException("Managers can only assign tasks to Team Leads and Employees");
+            }
+            return;
+        }
+        
+        if (byRole.equals("TEAM_LEAD")) {
+            if (!toRole.equals("EMPLOYEE")) {
+                throw new RuntimeException("Team Leads can only assign tasks to Employees");
+            }
+            return;
+        }
+        
+        throw new RuntimeException("Only Admins, Managers, and Team Leads can assign tasks");
     }
 }

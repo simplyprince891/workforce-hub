@@ -100,6 +100,19 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
     
+    @PostMapping("/comments")
+    @Operation(summary = "Add a comment to a task")
+    public ResponseEntity<TaskCommentResponse> addComment(@Valid @RequestBody TaskCommentRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(taskService.addComment(request));
+    }
+    
+    @DeleteMapping("/comments/{id}")
+    @Operation(summary = "Delete comment")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
+        taskService.deleteComment(id);
+        return ResponseEntity.noContent().build();
+    }
+    
     @GetMapping("/employee/{employeeId}/count")
     @Operation(summary = "Count tasks by employee")
     public ResponseEntity<Long> countTasksByEmployee(@PathVariable Long employeeId) {

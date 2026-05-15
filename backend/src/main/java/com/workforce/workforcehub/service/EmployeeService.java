@@ -4,7 +4,9 @@ import com.workforce.workforcehub.dto.EmployeeRequest;
 import com.workforce.workforcehub.dto.EmployeeResponse;
 import com.workforce.workforcehub.dto.PagedResponse;
 import com.workforce.workforcehub.entity.Employee;
+import com.workforce.workforcehub.entity.Team;
 import com.workforce.workforcehub.repository.EmployeeRepository;
+import com.workforce.workforcehub.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class EmployeeService {
     
     private final EmployeeRepository employeeRepository;
+    private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
     
     @Transactional
@@ -174,6 +177,12 @@ public class EmployeeService {
                     .orElseThrow(() -> new RuntimeException("Manager not found"));
             employee.setManager(manager);
         }
+
+        if (request.getTeamId() != null) {
+            Team team = teamRepository.findById(request.getTeamId())
+                    .orElseThrow(() -> new RuntimeException("Team not found"));
+            employee.setTeam(team);
+        }
     }
     
     private EmployeeResponse mapToResponse(Employee employee) {
@@ -189,6 +198,8 @@ public class EmployeeService {
                 employee.getRole(),
                 employee.getManager() != null ? employee.getManager().getId() : null,
                 employee.getManagerName(),
+                employee.getTeam() != null ? employee.getTeam().getId() : null,
+                employee.getTeam() != null ? employee.getTeam().getName() : null,
                 employee.getCreatedAt(),
                 employee.getUpdatedAt()
         );

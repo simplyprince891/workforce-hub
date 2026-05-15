@@ -40,5 +40,30 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [authGuard]
   },
+  { 
+    path: 'payroll', 
+    loadComponent: () => import('./pages/payroll/payroll.component').then(m => m.PayrollComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'payroll/:id', 
+    loadComponent: () => import('./pages/payslip/payslip.component').then(m => m.PayslipComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'leaves', 
+    loadComponent: () => import('./pages/leaves/leaves.component').then(m => m.LeavesComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'teams', 
+    loadComponent: () => import('./pages/teams/teams.component').then(m => m.TeamsComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'attendance', 
+    loadComponent: () => import('./pages/attendance/attendance.component').then(m => m.AttendanceComponent),
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: '/login' }
 ];

@@ -20,7 +20,7 @@ public class OpenApiConfig {
                         .description("Employee and Task Management System API"))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(new Components()
-                        .addSecurityScheme("Bearer Authentication", new SecurityScheme()
+                        .addSecuritySchemes("Bearer Authentication", new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")));

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PagedResponse } from './employee.service';
+export { PagedResponse };
 
 export interface TaskRequest {
   id?: number;
@@ -31,6 +32,16 @@ export interface SubtaskResponse {
   createdAt: string;
 }
 
+export interface TaskCommentResponse {
+  id: number;
+  taskId: number;
+  authorId: number;
+  authorName: string;
+  authorRole: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface TaskResponse {
   id: number;
   title: string;
@@ -44,6 +55,7 @@ export interface TaskResponse {
   deadline: string;
   createdAt: string;
   subtasks: SubtaskResponse[];
+  comments: TaskCommentResponse[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -99,6 +111,14 @@ export class TaskService {
 
   deleteSubtask(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/subtasks/${id}`);
+  }
+
+  addComment(taskId: number, authorId: number, content: string): Observable<TaskCommentResponse> {
+    return this.http.post<TaskCommentResponse>(`${this.apiUrl}/comments`, { taskId, authorId, content });
+  }
+
+  deleteComment(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/comments/${id}`);
   }
 
   countByEmployee(employeeId: number): Observable<number> {

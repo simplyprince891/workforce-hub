@@ -22,7 +22,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     
     boolean existsByEmail(String email);
     
-    @Query("SELECT e FROM Employee e WHERE e.name LIKE %:name% OR e.email LIKE %:email%")
+    @Query("SELECT e FROM Employee e WHERE " +
+           "(:name IS NULL OR :name = '' OR LOWER(e.name) LIKE LOWER(CONCAT('%', CAST(:name AS text), '%'))) AND " +
+           "(:email IS NULL OR :email = '' OR LOWER(e.email) LIKE LOWER(CONCAT('%', CAST(:email AS text), '%')))")
     Page<Employee> searchByNameOrEmail(@Param("name") String name, @Param("email") String email, Pageable pageable);
     
     @Query("SELECT e FROM Employee e WHERE e.department = :department")

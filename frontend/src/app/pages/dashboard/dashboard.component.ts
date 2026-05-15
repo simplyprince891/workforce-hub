@@ -1,161 +1,319 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { RouterLink, Router } from '@angular/router';
+import { TaskService, TaskResponse } from '../../services/task.service';
 import { EmployeeService } from '../../services/employee.service';
-import { TaskService } from '../../services/task.service';
+import { AuthService } from '../../services/auth.service';
+import { ExportService } from '../../services/export.service';
+import { LeaveService } from '../../services/leave.service';
+import { LayoutComponent } from '../../components/layout/layout.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, LayoutComponent],
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">WorkForce Hub</a>
-        <div class="d-flex">
-          <span class="navbar-text me-3">{{ user?.name }} ({{ user?.role }})</span>
-          <button class="btn btn-sm btn-outline-light" (click)="logout()">Logout</button>
+    <app-layout pageTitle="Overview" pageSubtitle="Tracking progress and operations">
+      <div header-actions *ngIf="canExport()" class="d-flex gap-2">
+        <button class="btn btn-outline-dark btn-sm rounded-pill px-3" (click)="exportEmployees('pdf')">
+          <i class="fas fa-file-pdf me-2"></i> Employees PDF
+        </button>
+        <button class="btn btn-dark btn-sm rounded-pill px-3" (click)="exportTasks('pdf')">
+          <i class="fas fa-file-export me-2"></i> Tasks PDF
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="row g-4 mb-5">
+        <div class="col-md-3">
+          <div class="glass-card stat-widget h-100">
+            <span class="stat-label">Total Tasks</span>
+            <span class="stat-value">{{ stats.totalTasks }}</span>
+            <div class="small text-muted mt-auto">System wide total</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="glass-card stat-widget h-100">
+            <span class="stat-label">Pending</span>
+            <span class="stat-value text-warning">{{ stats.pendingTasks }}</span>
+            <div class="small text-muted mt-auto">Awaiting action</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="glass-card stat-widget h-100">
+            <span class="stat-label">Completed</span>
+            <span class="stat-value text-success">{{ stats.completedTasks }}</span>
+            <div class="small text-muted mt-auto">Successfully done</div>
+          </div>
+        </div>
+        <div class="col-md-3" *ngIf="isAdmin()">
+          <div class="glass-card stat-widget h-100">
+            <span class="stat-label">Workforce</span>
+            <span class="stat-value">{{ stats.totalEmployees }}</span>
+            <div class="small text-muted mt-auto">Active accounts</div>
+          </div>
         </div>
       </div>
-    </nav>
-    
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-2 sidebar">
-          <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link active" routerLink="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/employees">Employees</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/tasks">Tasks</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/profile">Profile</a></li>
-          </ul>
+
+      <div class="row g-4 mb-5" *ngIf="isAdmin() || isManager()">
+        <div class="mb-4" [ngClass]="isAdmin() ? 'col-md-6' : 'col-md-12'">
+          <div class="glass-card h-100">
+            <h3 class="display-font fs-5 mb-4 border-bottom pb-2">Operational Analytics</h3>
+            <div class="d-flex flex-column gap-4">
+              <div class="chart-item">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="small fw-bold">Completed Tasks</span>
+                  <span class="small">{{ getTaskPercent(stats.completedTasks) | number:'1.0-0' }}%</span>
+                </div>
+                <div class="progress" style="height: 4px;">
+                  <div class="progress-bar bg-black" [style.width.%]="getTaskPercent(stats.completedTasks)"></div>
+                </div>
+              </div>
+              <div class="chart-item">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="small fw-bold">In Progress</span>
+                  <span class="small">{{ getTaskPercent(stats.inProgressTasks) | number:'1.0-0' }}%</span>
+                </div>
+                <div class="progress" style="height: 4px;">
+                  <div class="progress-bar bg-dark" [style.width.%]="getTaskPercent(stats.inProgressTasks)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4" *ngIf="isAdmin()">
+          <div class="glass-card h-100">
+            <h3 class="display-font fs-5 mb-4 border-bottom pb-2">Leave Summary</h3>
+            <div class="d-flex align-items-center mb-4 gap-4">
+              <div class="display-font text-black" style="font-size: 3rem;">{{ leaveSummary.pending }}</div>
+              <div class="small text-muted text-uppercase fw-bold letter-spacing-1">Requests<br>Pending</div>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-6">
+                <div class="p-2 border rounded text-center">
+                  <div class="small text-muted">Approved</div>
+                  <div class="fw-bold">{{ leaveSummary.approved }}</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-2 border rounded text-center">
+                  <div class="small text-muted">Rejected</div>
+                  <div class="fw-bold">{{ leaveSummary.rejected }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-0">
+        <div class="p-4 d-flex justify-content-between align-items-center border-bottom">
+          <h3 class="display-font fs-5 mb-0">Recent Activity</h3>
+          <a routerLink="/tasks" class="btn btn-link btn-sm text-black text-decoration-none fw-bold">View All <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
         
-        <div class="col-md-10 p-4">
-          <h2 class="page-header">Dashboard</h2>
-          
-          <div class="row mb-4">
-            <div class="col-md-3">
-              <div class="stat-card">
-                <div class="stat-value">{{ stats.totalEmployees }}</div>
-                <div class="stat-label">Total Employees</div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="stat-card">
-                <div class="stat-value">{{ stats.totalTasks }}</div>
-                <div class="stat-label">Total Tasks</div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="stat-card">
-                <div class="stat-value">{{ stats.pendingTasks }}</div>
-                <div class="stat-label">Pending Tasks</div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="stat-card">
-                <div class="stat-value">{{ stats.completedTasks }}</div>
-                <div class="stat-label">Completed Tasks</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">Quick Actions</h5>
-                  <div class="d-grid gap-2">
-                    <a routerLink="/employees/add" class="btn btn-primary">Add Employee</a>
-                    <a routerLink="/tasks" class="btn btn-primary">View Tasks</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">Export Data</h5>
-                  <div class="d-grid gap-2">
-                    <button class="btn btn-success" (click)="exportEmployeesPdf()">Export Employees PDF</button>
-                    <button class="btn btn-success" (click)="exportTasksPdf()">Export Tasks PDF</button>
-                    <button class="btn btn-info" (click)="exportEmployeesExcel()">Export Employees Excel</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="table-responsive p-3" *ngIf="recentTasks.length > 0; else emptyState">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th>Assigned To</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of recentTasks" class="animate-fade-in">
+                <td>
+                  <a [routerLink]="['/tasks', task.id]" class="text-decoration-none fw-bold text-black">
+                    {{ task.title }}
+                  </a>
+                </td>
+                <td><span class="badge-premium" [ngClass]="getPriorityClass(task.priority)">{{ task.priority }}</span></td>
+                <td><span class="badge-premium" [ngClass]="getStatusClass(task.status)">{{ task.status }}</span></td>
+                <td class="small text-muted">{{ task.deadline | date:'mediumDate' }}</td>
+                <td class="small">{{ task.assignedToName || 'Unassigned' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        
+        <ng-template #emptyState>
+          <div class="p-5 text-center text-muted">
+            <i class="fas fa-inbox display-4 mb-3 opacity-25"></i>
+            <h5 class="display-font text-dark">No recent activity</h5>
+            <p class="small">New tasks will appear here as they are created.</p>
+          </div>
+        </ng-template>
       </div>
-    </div>
+    </app-layout>
   `
 })
 export class DashboardComponent implements OnInit {
-  user = this.authService.getCurrentUser();
-  stats = { totalEmployees: 0, totalTasks: 0, pendingTasks: 0, completedTasks: 0 };
+  stats = {
+    totalTasks: 0,
+    pendingTasks: 0,
+    inProgressTasks: 0,
+    completedTasks: 0,
+    totalEmployees: 0
+  };
+  
+  leaveSummary: any = {
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0
+  };
+  
+  recentTasks: TaskResponse[] = [];
+  currentUser = this.authService.getCurrentUser();
 
   constructor(
-    private authService: AuthService,
+    private taskService: TaskService,
     private employeeService: EmployeeService,
-    private taskService: TaskService
+    private authService: AuthService,
+    private exportService: ExportService,
+    private leaveService: LeaveService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadStats();
+    this.loadRecentTasks();
   }
 
   loadStats(): void {
-    this.employeeService.getAll(0, 1).subscribe(res => {
-      this.stats.totalEmployees = res.totalElements;
-    });
+    if (this.isAdmin() || this.isManager()) {
+      this.employeeService.getAll(0, 1).subscribe(res => {
+        this.stats.totalEmployees = res.totalElements;
+      });
+      
+      this.leaveService.getLeaveSummary().subscribe({
+        next: (data) => this.leaveSummary = data,
+        error: (err) => console.error('Leave summary error:', err)
+      });
+    }
+
+    if (this.isAdmin()) {
+      this.taskService.getAll(0, 100).subscribe(res => {
+        this.calculateTaskStats(res.content);
+      });
+    } else if (this.authService.hasRole(['MANAGER', 'TEAM_LEAD'])) {
+      this.taskService.getByEmployee(this.currentUser!.employeeId).subscribe((assignedToMe: any[]) => {
+        this.taskService.getByManager(this.currentUser!.employeeId).subscribe((assignedByMe: any[]) => {
+          const all = [...assignedToMe, ...assignedByMe];
+          const unique = Array.from(new Map(all.map(item => [item.id, item])).values());
+          this.calculateTaskStats(unique);
+        });
+      });
+    } else {
+      this.taskService.getByEmployee(this.currentUser!.employeeId).subscribe((res: any[]) => {
+        this.calculateTaskStats(res);
+      });
+    }
+  }
+  
+  calculateTaskStats(tasks: any[]): void {
+    this.stats.totalTasks = tasks.length;
+    this.stats.pendingTasks = tasks.filter((t: any) => t.status === 'PENDING').length;
+    this.stats.inProgressTasks = tasks.filter((t: any) => t.status === 'IN_PROGRESS').length;
+    this.stats.completedTasks = tasks.filter((t: any) => t.status === 'DONE').length;
+  }
+  
+  getTaskPercent(val: number): number {
+    if (!this.stats.totalTasks) return 0;
+    return (val / this.stats.totalTasks) * 100;
+  }
+  
+  getLeavePercent(val: number): number {
+    if (!this.leaveSummary.total) return 0;
+    return (val / this.leaveSummary.total) * 100;
+  }
+
+  loadRecentTasks(): void {
+    if (!this.currentUser) return;
     
-    this.taskService.getAll(0, 1).subscribe(res => {
-      this.stats.totalTasks = res.totalElements;
-      this.stats.pendingTasks = res.content.filter(t => t.status === 'PENDING').length;
-      this.stats.completedTasks = res.content.filter(t => t.status === 'DONE').length;
-    });
+    if (this.isAdmin()) {
+      this.taskService.getAll(0, 5).subscribe(res => {
+        this.recentTasks = res.content;
+      });
+    } else if (this.authService.hasRole(['MANAGER', 'TEAM_LEAD'])) {
+      this.taskService.getByEmployee(this.currentUser.employeeId).subscribe((assignedToMe: any[]) => {
+        this.taskService.getByManager(this.currentUser!.employeeId).subscribe((assignedByMe: any[]) => {
+          const all = [...assignedToMe, ...assignedByMe];
+          const unique = Array.from(new Map(all.map(item => [item.id, item])).values());
+          // Sort by latest and take top 5
+          this.recentTasks = unique.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 5);
+        });
+      });
+    } else {
+      this.taskService.getByEmployee(this.currentUser.employeeId).subscribe((res: any[]) => {
+        this.recentTasks = res.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 5);
+      });
+    }
   }
 
-  logout(): void {
-    this.authService.logout();
-    window.location.href = '/login';
+  getPriorityClass(priority: string): string {
+    const map: any = { 'HIGH': 'badge-premium-red', 'MEDIUM': 'badge-premium-blue', 'LOW': 'badge-premium-green' };
+    return map[priority] || 'badge-secondary';
   }
 
-  exportEmployeesPdf(): void {
-    import('../../services/export.service').then(m => {
-      m.ExportService.prototype.exportEmployeesPdf().subscribe(blob => {
+  getStatusClass(status: string): string {
+    const map: any = { 'PENDING': 'badge-premium-blue', 'IN_PROGRESS': 'badge-premium-blue', 'DONE': 'badge-premium-green' };
+    return map[status] || 'badge-secondary';
+  }
+
+  isAdmin(): boolean {
+    return this.authService.hasRole(['ADMIN']);
+  }
+
+  isManager(): boolean {
+    return this.authService.hasRole(['MANAGER']);
+  }
+
+  canExport(): boolean {
+    return this.authService.hasRole(['ADMIN', 'MANAGER', 'TEAM_LEAD']);
+  }
+
+  exportEmployees(format: 'pdf' | 'excel'): void {
+    if (format === 'pdf') {
+      this.exportService.exportEmployeesPdf().subscribe(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = 'employees.pdf';
         a.click();
       });
-    });
-  }
-
-  exportTasksPdf(): void {
-    import('../../services/export.service').then(m => {
-      m.ExportService.prototype.exportTasksPdf().subscribe(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'tasks.pdf';
-        a.click();
-      });
-    });
-  }
-
-  exportEmployeesExcel(): void {
-    import('../../services/export.service').then(m => {
-      m.ExportService.prototype.exportEmployeesExcel().subscribe(blob => {
+    } else {
+      this.exportService.exportEmployeesExcel().subscribe(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = 'employees.xlsx';
         a.click();
       });
-    });
+    }
+  }
+
+  exportTasks(format: 'pdf' | 'excel'): void {
+    if (format === 'pdf') {
+      this.exportService.exportTasksPdf().subscribe(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tasks.pdf';
+        a.click();
+      });
+    } else {
+      this.exportService.exportTasksExcel().subscribe(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tasks.xlsx';
+        a.click();
+      });
+    }
   }
 }

@@ -4,82 +4,91 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { EmployeeService, EmployeeResponse, EmployeeRequest } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
+import { LayoutComponent } from '../../components/layout/layout.component';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, LayoutComponent],
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">WorkForce Hub</a>
-        <div class="d-flex">
-          <span class="navbar-text me-3">{{ currentUser?.name }} ({{ currentUser?.role }})</span>
-          <button class="btn btn-sm btn-outline-light" (click)="logout()">Logout</button>
-        </div>
+    <app-layout [pageTitle]="isEditMode ? 'Edit Employee' : 'Add Employee'" [pageSubtitle]="isEditMode ? 'Update employee records' : 'Register a new employee'">
+      <div header-actions>
+        <a routerLink="/employees" class="btn btn-outline-secondary">
+          <span>←</span> Back to Employees
+        </a>
       </div>
-    </nav>
-    
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-2 sidebar">
-          <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" routerLink="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/employees">Employees</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/tasks">Tasks</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/profile">Profile</a></li>
-          </ul>
-        </div>
-        
-        <div class="col-md-10 p-4">
-          <h2 class="page-header">{{ isEditMode ? 'Edit' : 'Add' }} Employee</h2>
-          
-          <div class="card">
-            <div class="card-body">
+      
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div class="custom-card">
+            <div class="card-body-custom p-5">
               <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                
+                <h5 class="mb-4 text-primary fw-bold border-bottom pb-2">Personal Details</h5>
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Name *</label>
-                    <input type="text" class="form-control" formControlName="name"
-                           [class.is-invalid]="form.get('name')?.touched && form.get('name')?.invalid">
+                    <label class="form-label">Full Name *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">👤</span>
+                      <input type="text" class="form-control with-icon" formControlName="name"
+                             [class.is-invalid]="form.get('name')?.touched && form.get('name')?.invalid" placeholder="John Doe">
+                    </div>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Email *</label>
-                    <input type="email" class="form-control" formControlName="email"
-                           [class.is-invalid]="form.get('email')?.touched && form.get('email')?.invalid">
+                    <label class="form-label">Email Address *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">✉️</span>
+                      <input type="email" class="form-control with-icon" formControlName="email"
+                             [class.is-invalid]="form.get('email')?.touched && form.get('email')?.invalid" placeholder="john@example.com">
+                    </div>
                   </div>
                 </div>
                 
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Age *</label>
-                    <input type="number" class="form-control" formControlName="age"
-                           [class.is-invalid]="form.get('age')?.touched && form.get('age')?.invalid">
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">📅</span>
+                      <input type="number" class="form-control with-icon" formControlName="age"
+                             [class.is-invalid]="form.get('age')?.touched && form.get('age')?.invalid">
+                    </div>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Mobile *</label>
-                    <input type="text" class="form-control" formControlName="mobile" maxlength="10"
-                           [class.is-invalid]="form.get('mobile')?.touched && form.get('mobile')?.invalid">
+                    <label class="form-label">Mobile Number *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">📱</span>
+                      <input type="text" class="form-control with-icon" formControlName="mobile" maxlength="10"
+                             [class.is-invalid]="form.get('mobile')?.touched && form.get('mobile')?.invalid">
+                    </div>
                   </div>
                 </div>
                 
+                <h5 class="mb-4 mt-5 text-primary fw-bold border-bottom pb-2">Account Setup</h5>
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Username *</label>
-                    <input type="text" class="form-control" formControlName="username"
-                           [class.is-invalid]="form.get('username')?.touched && form.get('username')?.invalid">
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">&#64;</span>
+                      <input type="text" class="form-control with-icon" formControlName="username"
+                             [class.is-invalid]="form.get('username')?.touched && form.get('username')?.invalid">
+                    </div>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Password {{ isEditMode ? '' : '*' }}</label>
-                    <input type="password" class="form-control" formControlName="password">
+                    <label class="form-label">Password {{ isEditMode ? '(Leave blank to keep current)' : '*' }}</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">🔒</span>
+                      <input type="password" class="form-control with-icon" formControlName="password"
+                             placeholder="{{ isEditMode ? '••••••••' : 'Enter password' }}">
+                    </div>
                   </div>
                 </div>
                 
+                <h5 class="mb-4 mt-5 text-primary fw-bold border-bottom pb-2">Employment Information</h5>
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Department *</label>
-                    <select class="form-select" formControlName="department">
-                      <option value="">Select</option>
+                    <select class="form-select form-control" formControlName="department">
+                      <option value="">Select Department</option>
                       <option value="IT">IT</option>
                       <option value="HR">HR</option>
                       <option value="Finance">Finance</option>
@@ -88,41 +97,50 @@ import { AuthService } from '../../services/auth.service';
                     </select>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Salary *</label>
-                    <input type="number" class="form-control" formControlName="salary">
+                    <label class="form-label">Annual Salary (INR) *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">₹</span>
+                      <input type="number" class="form-control with-icon" formControlName="salary">
+                    </div>
                   </div>
                 </div>
                 
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Role *</label>
-                    <select class="form-select" formControlName="role">
+                    <label class="form-label">System Role *</label>
+                    <select class="form-select form-control" formControlName="role">
                       <option value="EMPLOYEE">Employee</option>
-                      <option value="MANAGER">Manager</option>
                       <option value="TEAM_LEAD">Team Lead</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="ADMIN" *ngIf="isAdmin()">Admin</option>
                     </select>
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label class="form-label">Manager</label>
-                    <select class="form-select" formControlName="managerId">
+                    <label class="form-label">Reporting Manager</label>
+                    <select class="form-select form-control" formControlName="managerId">
                       <option [ngValue]="null">None</option>
                       <option *ngFor="let m of managers" [ngValue]="m.id">{{ m.name }}</option>
                     </select>
                   </div>
                 </div>
                 
-                <div class="d-flex gap-2">
-                  <button type="submit" class="btn btn-primary" [disabled]="loading">
-                    {{ loading ? 'Saving...' : 'Save' }}
+                <div *ngIf="error" class="alert alert-danger custom-alert mt-3 mb-0">
+                  <span class="alert-icon">⚠️</span> {{ error }}
+                </div>
+                
+                <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top">
+                  <a routerLink="/employees" class="btn btn-outline-secondary">Cancel</a>
+                  <button type="submit" class="btn btn-primary btn-glow px-4" [disabled]="loading">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    {{ loading ? 'Saving...' : 'Save Employee' }}
                   </button>
-                  <a routerLink="/employees" class="btn btn-secondary">Cancel</a>
                 </div>
               </form>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </app-layout>
   `
 })
 export class EmployeeFormComponent implements OnInit {
@@ -206,5 +224,9 @@ export class EmployeeFormComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     window.location.href = '/login';
+  }
+
+  isAdmin(): boolean {
+    return this.authService.hasRole(['ADMIN']);
   }
 }

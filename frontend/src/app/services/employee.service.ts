@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { EmployeeRequest } from './auth.service';
+export { EmployeeRequest };
 
 export interface EmployeeResponse {
   id: number;

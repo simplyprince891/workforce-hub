@@ -1,119 +1,118 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { AuthService, AuthResponse } from '../../services/auth.service';
-import { TaskService } from '../../services/task.service';
+import { EmployeeService, EmployeeResponse } from '../../services/employee.service';
+import { AuthService } from '../../services/auth.service';
+import { LayoutComponent } from '../../components/layout/layout.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, LayoutComponent],
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">WorkForce Hub</a>
-        <div class="d-flex">
-          <span class="navbar-text me-3">{{ user?.name }}</span>
-          <button class="btn btn-sm btn-outline-light" (click)="logout()">Logout</button>
-        </div>
-      </div>
-    </nav>
-    
-    <div class="container-fluid">
+    <app-layout pageTitle="My Profile" pageSubtitle="Manage your account details">
       <div class="row">
-        <div class="col-md-2 sidebar">
-          <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" routerLink="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/employees">Employees</a></li>
-            <li class="nav-item"><a class="nav-link" routerLink="/tasks">Tasks</a></li>
-            <li class="nav-item"><a class="nav-link active" routerLink="/profile">Profile</a></li>
-          </ul>
+        <div class="col-md-4 mb-4">
+          <div class="custom-card text-center p-4">
+            <div class="avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 36px;">
+              {{ getInitials() }}
+            </div>
+            <h4 class="mb-1 text-primary fw-bold">{{ profile?.name }}</h4>
+            <p class="text-muted mb-3">{{ profile?.role }}</p>
+            
+            <div class="d-flex justify-content-center gap-2 mb-3">
+              <span class="badge-custom" [class]="getRoleClass(profile?.role || '')">{{ profile?.role }}</span>
+              <span class="badge-custom badge-secondary">{{ profile?.department }}</span>
+            </div>
+          </div>
         </div>
         
-        <div class="col-md-10 p-4">
-          <h2 class="page-header">My Profile</h2>
-          
-          <div class="row">
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">User Information</h5>
-                  <div class="mt-3">
-                    <p><strong>Name:</strong> {{ user?.name }}</p>
-                    <p><strong>Username:</strong> {{ user?.username }}</p>
-                    <p><strong>Email:</strong> {{ user?.username }}@workforce.com</p>
-                    <p><strong>Role:</strong> <span class="badge bg-primary">{{ user?.role }}</span></p>
-                    <p><strong>Employee ID:</strong> {{ user?.employeeId }}</p>
-                  </div>
-                </div>
+        <div class="col-md-8 mb-4">
+          <div class="custom-card">
+            <div class="card-header-custom">
+              <h5 class="card-title-custom mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body-custom">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Full Name</div>
+                <div class="col-sm-9 fw-medium">{{ profile?.name }}</div>
+              </div>
+              <hr class="border-light">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Email</div>
+                <div class="col-sm-9"><a href="mailto:{{ profile?.email }}">{{ profile?.email }}</a></div>
+              </div>
+              <hr class="border-light">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Mobile</div>
+                <div class="col-sm-9">{{ profile?.mobile }}</div>
+              </div>
+              <hr class="border-light">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Age</div>
+                <div class="col-sm-9">{{ profile?.age }} years</div>
+              </div>
+              <hr class="border-light">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Username</div>
+                <div class="col-sm-9">&#64;{{ profile?.username }}</div>
               </div>
             </div>
-            
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">My Task Statistics</h5>
-                  <div class="row mt-3">
-                    <div class="col-6">
-                      <div class="stat-card text-center">
-                        <div class="stat-value">{{ taskStats.total }}</div>
-                        <div class="stat-label">Total Tasks</div>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="stat-card text-center">
-                        <div class="stat-value">{{ taskStats.pending }}</div>
-                        <div class="stat-label">Pending</div>
-                      </div>
-                    </div>
-                    <div class="col-6 mt-3">
-                      <div class="stat-card text-center">
-                        <div class="stat-value">{{ taskStats.inProgress }}</div>
-                        <div class="stat-label">In Progress</div>
-                      </div>
-                    </div>
-                    <div class="col-6 mt-3">
-                      <div class="stat-card text-center">
-                        <div class="stat-value">{{ taskStats.completed }}</div>
-                        <div class="stat-label">Completed</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          </div>
+          
+          <div class="custom-card mt-4">
+            <div class="card-header-custom">
+              <h5 class="card-title-custom mb-0">Employment Details</h5>
+            </div>
+            <div class="card-body-custom">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Department</div>
+                <div class="col-sm-9">{{ profile?.department }}</div>
+              </div>
+              <hr class="border-light">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Manager</div>
+                <div class="col-sm-9">{{ profile?.managerName || 'None' }}</div>
+              </div>
+              <hr class="border-light">
+              <div class="row mb-4">
+                <div class="col-sm-3 text-muted">Joined Date</div>
+                <div class="col-sm-9">{{ profile?.createdAt | date:'longDate' }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </app-layout>
   `
 })
 export class ProfileComponent implements OnInit {
-  user: AuthResponse | null = null;
-  taskStats = { total: 0, pending: 0, inProgress: 0, completed: 0 };
+  profile: EmployeeResponse | null = null;
+  currentUser = this.authService.getCurrentUser();
 
-  constructor(private authService: AuthService, private taskService: TaskService) {}
+  constructor(
+    private employeeService: EmployeeService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.user = this.authService.getCurrentUser();
-    if (this.user) {
-      this.taskService.countByEmployee(this.user.employeeId).subscribe(count => {
-        this.taskStats.total = count;
-      });
-      this.taskService.countByEmployeeAndStatus(this.user.employeeId, 'PENDING').subscribe(count => {
-        this.taskStats.pending = count;
-      });
-      this.taskService.countByEmployeeAndStatus(this.user.employeeId, 'IN_PROGRESS').subscribe(count => {
-        this.taskStats.inProgress = count;
-      });
-      this.taskService.countByEmployeeAndStatus(this.user.employeeId, 'DONE').subscribe(count => {
-        this.taskStats.completed = count;
+    this.loadProfile();
+  }
+
+  loadProfile(): void {
+    if (this.currentUser?.employeeId) {
+      this.employeeService.getById(this.currentUser.employeeId).subscribe(res => {
+        this.profile = res;
       });
     }
   }
 
-  logout(): void {
-    this.authService.logout();
-    window.location.href = '/login';
+  getInitials(): string {
+    const name = this.profile?.name || '?';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  }
+
+  getRoleClass(role: string): string {
+    const map: any = { 'ADMIN': 'badge-danger', 'MANAGER': 'badge-primary', 'TEAM_LEAD': 'badge-info', 'EMPLOYEE': 'badge-success' };
+    return map[role] || 'badge-secondary';
   }
 }

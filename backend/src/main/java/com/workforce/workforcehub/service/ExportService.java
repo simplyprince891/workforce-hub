@@ -131,7 +131,7 @@ public class ExportService {
         String[] headers = {"ID", "Name", "Email", "Age", "Mobile", "Username", "Department", "Salary", "Role", "Manager"};
         
         for (int i = 0; i < headers.length; i++) {
-            Cell cell = headerRow.createCell(i);
+            org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
             cell.setCellStyle(headerStyle);
         }
@@ -179,7 +179,7 @@ public class ExportService {
         String[] headers = {"ID", "Title", "Description", "Assigned By", "Assigned To", "Priority", "Status", "Deadline", "Created At"};
         
         for (int i = 0; i < headers.length; i++) {
-            Cell cell = headerRow.createCell(i);
+            org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
             cell.setCellStyle(headerStyle);
         }
