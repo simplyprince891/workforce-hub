@@ -13,7 +13,7 @@ import { AuthService, EmployeeRequest } from '../../services/auth.service';
       <div class="auth-card">
         <div class="text-center mb-4">
           <h2 class="auth-title display-font">Join Us</h2>
-          <p class="auth-subtitle">Create your Workforce account</p>
+          <p class="auth-subtitle">Create your OpsFlow account</p>
         </div>
         
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
@@ -32,7 +32,7 @@ import { AuthService, EmployeeRequest } from '../../services/auth.service';
             <div class="input-icon-wrapper">
               <span class="input-icon"><i class="fas fa-envelope"></i></span>
               <input type="email" class="form-control with-icon" formControlName="email"
-                     [class.is-invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" placeholder="john@workforce.com">
+                     [class.is-invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" placeholder="john@opsflow.com">
             </div>
             <div class="invalid-feedback small mt-1">Valid email is required</div>
           </div>

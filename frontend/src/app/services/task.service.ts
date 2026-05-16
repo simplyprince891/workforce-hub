@@ -9,7 +9,8 @@ export interface TaskRequest {
   title: string;
   description?: string;
   assignedById: number;
-  assignedToId: number;
+  assignedToId?: number;
+  teamId?: number;
   priority: string;
   status?: string;
   deadline: string;
@@ -48,8 +49,10 @@ export interface TaskResponse {
   description?: string;
   assignedById: number;
   assignedByName: string;
-  assignedToId: number;
-  assignedToName: string;
+  assignedToId?: number;
+  assignedToName?: string;
+  teamId?: number;
+  teamName?: string;
   priority: string;
   status: string;
   deadline: string;

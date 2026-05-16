@@ -26,7 +26,7 @@ import { LayoutComponent } from '../../components/layout/layout.component';
             <!-- Header -->
             <div class="p-5 border-bottom bg-light d-flex justify-content-between align-items-center">
               <div>
-                <h3 class="fw-bold text-primary mb-1">WorkForce Hub Inc.</h3>
+                <h3 class="fw-bold text-primary mb-1">OpsFlow Inc.</h3>
                 <p class="text-muted mb-0">123 Tech Park, Bangalore 560001</p>
               </div>
               <div class="text-end">

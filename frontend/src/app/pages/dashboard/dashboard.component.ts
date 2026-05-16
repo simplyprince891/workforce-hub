@@ -48,7 +48,7 @@ import { LayoutComponent } from '../../components/layout/layout.component';
         </div>
         <div class="col-md-3" *ngIf="isAdmin()">
           <div class="glass-card stat-widget h-100">
-            <span class="stat-label">Workforce</span>
+            <span class="stat-label">Organization</span>
             <span class="stat-value">{{ stats.totalEmployees }}</span>
             <div class="small text-muted mt-auto">Active accounts</div>
           </div>

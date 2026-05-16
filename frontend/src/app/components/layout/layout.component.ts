@@ -14,7 +14,7 @@ import { AuthService } from '../../services/auth.service';
           <div class="logo-icon bg-black text-white rounded d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
             <i class="fas fa-bolt"></i>
           </div>
-          <span class="logo-text fw-bold fs-5 display-font">WorkForce</span>
+          <span class="logo-text fw-bold fs-5 display-font">OpsFlow</span>
         </div>
         
         <nav class="flex-column d-flex gap-2 flex-grow-1">

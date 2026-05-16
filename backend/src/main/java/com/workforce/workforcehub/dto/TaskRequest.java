@@ -32,4 +32,6 @@ public class TaskRequest {
     
     @NotNull(message = "Deadline is required")
     private LocalDate deadline;
+    
+    private Long teamId;
 }

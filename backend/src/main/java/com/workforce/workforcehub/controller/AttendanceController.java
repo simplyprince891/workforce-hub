@@ -64,5 +64,40 @@ public class AttendanceController {
                 .collect(Collectors.toList()));
     }
 
+    @PostMapping("/{employeeId}/request-reset")
+    public ResponseEntity<?> requestReset(@PathVariable Long employeeId, @RequestBody String reason) {
+        try {
+            return ResponseEntity.ok(com.workforce.workforcehub.dto.AttendanceResetRequestResponse.fromEntity(attendanceService.requestReset(employeeId, reason)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/resets/pending")
+    public ResponseEntity<List<com.workforce.workforcehub.dto.AttendanceResetRequestResponse>> getPendingResets() {
+        return ResponseEntity.ok(attendanceService.getPendingResets().stream()
+                .map(com.workforce.workforcehub.dto.AttendanceResetRequestResponse::fromEntity)
+                .collect(Collectors.toList()));
+    }
+
+    @PostMapping("/resets/approve/{requestId}")
+    public ResponseEntity<?> approveReset(@PathVariable Long requestId, @RequestBody(required = false) String remarks) {
+        try {
+            attendanceService.approveReset(requestId, remarks);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{employeeId}/work-hours")
+    public ResponseEntity<Double> getWorkHours(
+            @PathVariable Long employeeId,
+            @RequestParam int month,
+            @RequestParam int year) {
+        return ResponseEntity.ok(attendanceService.getTotalWorkHoursForMonth(employeeId, month, year));
+    }
+
     private record ErrorResponse(String message) {}
 }
+

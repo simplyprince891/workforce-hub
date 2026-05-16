@@ -39,4 +39,20 @@ export class AttendanceService {
   getMonthLogs(employeeId: number, month: number, year: number): Observable<AttendanceResponse[]> {
     return this.http.get<AttendanceResponse[]>(`${this.apiUrl}/${employeeId}/month?month=${month}&year=${year}`);
   }
+
+  requestReset(employeeId: number, reason: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${employeeId}/request-reset`, reason);
+  }
+
+  getPendingResets(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/resets/pending`);
+  }
+
+  approveReset(requestId: number, remarks: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/resets/approve/${requestId}`, remarks);
+  }
+
+  getWorkHours(employeeId: number, month: number, year: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/${employeeId}/work-hours?month=${month}&year=${year}`);
+  }
 }

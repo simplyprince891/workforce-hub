@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: workforce-hub
+    name: opsflow
   
   datasource:
     url: jdbc:postgresql://localhost:5432/workforce

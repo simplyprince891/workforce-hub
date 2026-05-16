@@ -1,0 +1,59 @@
+================================================================================
+OPSFLOW (WORKFORCE HUB) - LIVE DEMO SCRIPT
+================================================================================
+
+PHASE 1: THE INTRODUCTION (LOGIN)
+--------------------------------------------------------------------------------
+[Start on the Login Page]
+"Welcome to OpsFlow. Our platform is built to solve the fragmentation in workforce management. I'll start by logging in as an Admin to show the full scale of the system."
+
+Action: Enter Username 'admin' and Password 'admin123'. Click Login.
+
+PHASE 2: THE COMMAND CENTER (DASHBOARD)
+--------------------------------------------------------------------------------
+[Landed on Dashboard]
+"The first thing you see is the Command Center. Here, we get real-time analytics on our total workforce, pending tasks, and attendance stats. This is the 'Operations Hub' in action—everything is integrated and live."
+
+Action: Point to the stat cards and the recent activity section.
+
+PHASE 3: RESOURCE MANAGEMENT (EMPLOYEE HUB)
+--------------------------------------------------------------------------------
+"Next, let's look at Employee Management. Managing 20+ staff members manually is hard, but OpsFlow makes it easy. I can quickly find any employee using our advanced search and filters."
+
+Action: 
+1. Click 'Employees' in the sidebar.
+2. Type 'Alice' in the search bar to show instant filtering.
+3. Use the Department filter to show only 'Engineering' staff.
+"Notice the pagination—the system is built to handle thousands of records without slowing down."
+
+PHASE 4: THE INTELLIGENT TASK ENGINE (TASKS & CONVERSATION)
+--------------------------------------------------------------------------------
+"This is the heart of the system. Let's look at a complex project: the 'Database Migration' task."
+
+Action: 
+1. Click 'Tasks' in the sidebar.
+2. Click on the task: "Migrate Database to PostgreSQL".
+"Here you see our multi-tier task management. We don't just have tasks; we have granular sub-tasks for precise tracking."
+
+Action: Toggle a sub-task as 'Done' and show the progress change.
+"Crucially, we have a built-in Conversation Hub. No more lost emails—managers and employees discuss the work right here. You can see our permanent history of messages between the team."
+
+Action: Point to the comments section and the "System Note" I added.
+
+PHASE 5: DATA SOVEREIGNTY (REPORTING HUB)
+--------------------------------------------------------------------------------
+"Finally, for auditing and performance reviews, we need data exports. OpsFlow provides one-click reporting."
+
+Action: 
+1. Click 'Export' or use the export buttons on the Employee/Task tables.
+2. Click 'Export to PDF'.
+3. Open the downloaded file.
+"As you can see, the system generates a professional, audit-ready document instantly, including all current workforce data."
+
+PHASE 6: THE CONCLUSION
+--------------------------------------------------------------------------------
+"That concludes the demo. OpsFlow moves your workforce from manual spreadsheets to a secure, role-based, and automated ecosystem. Thank you."
+
+--------------------------------------------------------------------------------
+END OF SCRIPT
+================================================================================

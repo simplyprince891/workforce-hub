@@ -15,8 +15,8 @@ import { AuthService } from '../../services/auth.service';
           <div class="logo-icon bg-black text-white rounded d-inline-flex align-items-center justify-content-center mb-4" style="width: 48px; height: 48px; font-size: 1.5rem;">
             <i class="fas fa-bolt"></i>
           </div>
-          <h2 class="auth-title display-font">WorkForce</h2>
-          <p class="auth-subtitle">Management Hub</p>
+          <h2 class="auth-title display-font">OpsFlow</h2>
+          <p class="auth-subtitle">Operations Management</p>
         </div>
         
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">

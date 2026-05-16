@@ -23,6 +23,8 @@ public class TaskResponse {
     private String status;
     private LocalDate deadline;
     private LocalDateTime createdAt;
+    private Long teamId;
+    private String teamName;
     private List<SubtaskResponse> subtasks;
     private List<TaskCommentResponse> comments;
 }

@@ -22,4 +22,6 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
     
     @Query("SELECT COALESCE(SUM(p.netSalary), 0) FROM Payroll p WHERE p.month = :month AND p.year = :year")
     Double getTotalPayrollForMonth(@Param("month") Integer month, @Param("year") Integer year);
+    
+    void deleteByEmployeeId(Long employeeId);
 }

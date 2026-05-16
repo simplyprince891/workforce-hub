@@ -9,6 +9,8 @@ import com.workforce.workforcehub.repository.EmployeeRepository;
 import com.workforce.workforcehub.repository.SubtaskRepository;
 import com.workforce.workforcehub.repository.TaskCommentRepository;
 import com.workforce.workforcehub.repository.TaskRepository;
+import com.workforce.workforcehub.entity.Team;
+import com.workforce.workforcehub.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,7 @@ public class TaskService {
     private final SubtaskRepository subtaskRepository;
     private final TaskCommentRepository taskCommentRepository;
     private final EmployeeRepository employeeRepository;
+    private final TeamRepository teamRepository;
     
     @Transactional
     public TaskResponse createTask(TaskRequest request) {
@@ -37,12 +40,16 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Assigned by employee not found"));
         task.setAssignedBy(assignedBy);
         
-        Employee assignedTo = employeeRepository.findById(request.getAssignedToId())
-                .orElseThrow(() -> new RuntimeException("Assigned to employee not found"));
-        
-        validateAssignmentHierarchy(assignedBy, assignedTo);
-        
-        task.setAssignedTo(assignedTo);
+        if (request.getTeamId() != null) {
+            Team team = teamRepository.findById(request.getTeamId())
+                    .orElseThrow(() -> new RuntimeException("Team not found"));
+            task.setTeam(team);
+        } else if (request.getAssignedToId() != null) {
+            Employee assignedTo = employeeRepository.findById(request.getAssignedToId())
+                    .orElseThrow(() -> new RuntimeException("Assigned to employee not found"));
+            validateAssignmentHierarchy(assignedBy, assignedTo);
+            task.setAssignedTo(assignedTo);
+        }
         
         if (task.getStatus() == null) {
             task.setStatus("PENDING");
@@ -51,39 +58,49 @@ public class TaskService {
         Task saved = taskRepository.save(task);
         return mapToResponse(saved);
     }
-    
+
     @Transactional
     public TaskResponse updateTask(Long id, TaskRequest request) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-        
-        updateTaskFromRequest(task, request);
-        
+
+        // Basic Info
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setPriority(request.getPriority());
+        task.setStatus(request.getStatus());
+        task.setDeadline(request.getDeadline());
+
+        // Assigner update (if admin or manager override)
         if (request.getAssignedById() != null) {
             Employee assignedBy = employeeRepository.findById(request.getAssignedById())
                     .orElseThrow(() -> new RuntimeException("Assigned by employee not found"));
             task.setAssignedBy(assignedBy);
         }
-        
-        if (request.getAssignedToId() != null) {
+
+        // Dynamic Reassignment logic
+        if (request.getTeamId() != null) {
+            Team team = teamRepository.findById(request.getTeamId())
+                    .orElseThrow(() -> new RuntimeException("Team not found"));
+            task.setTeam(team);
+            task.setAssignedTo(null); // Mutually exclusive
+        } else if (request.getAssignedToId() != null) {
             Employee assignedTo = employeeRepository.findById(request.getAssignedToId())
                     .orElseThrow(() -> new RuntimeException("Assigned to employee not found"));
             
-            // For update, we need to know who is assigning it. 
-            // In a real app, this would be the current authenticated user.
-            // For now, we use assignedBy from the task or request.
-            Employee currentAssigner = task.getAssignedBy();
-            if (request.getAssignedById() != null) {
-                currentAssigner = employeeRepository.findById(request.getAssignedById()).orElse(currentAssigner);
-            }
-            
-            if (currentAssigner != null) {
-                validateAssignmentHierarchy(currentAssigner, assignedTo);
+            // Validate hierarchy for the new assignment
+            if (task.getAssignedBy() != null) {
+                validateAssignmentHierarchy(task.getAssignedBy(), assignedTo);
             }
             
             task.setAssignedTo(assignedTo);
+            task.setTeam(null); // Mutually exclusive
+        } else {
+            // Unassigned task
+            task.setAssignedTo(null);
+            task.setTeam(null);
         }
-        
+
         Task saved = taskRepository.save(task);
         return mapToResponse(saved);
     }
@@ -180,7 +197,6 @@ public class TaskService {
         subtask.setIsCompleted(!subtask.getIsCompleted());
         Subtask saved = subtaskRepository.save(subtask);
         
-        // Auto-update parent task status if all subtasks are complete
         Task task = saved.getTask();
         List<Subtask> allSubtasks = subtaskRepository.findByTaskId(task.getId());
         boolean allCompleted = !allSubtasks.isEmpty() && allSubtasks.stream().allMatch(Subtask::getIsCompleted);
@@ -274,6 +290,8 @@ public class TaskService {
                 task.getStatus(),
                 task.getDeadline(),
                 task.getCreatedAt(),
+                task.getTeam() != null ? task.getTeam().getId() : null,
+                task.getTeam() != null ? task.getTeam().getName() : null,
                 subtasks,
                 comments
         );

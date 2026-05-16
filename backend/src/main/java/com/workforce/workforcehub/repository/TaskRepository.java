@@ -35,4 +35,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     
     @Query("SELECT COUNT(t) FROM Task t WHERE t.assignedBy.id = :managerId")
     Long countTasksByManagerId(@Param("managerId") Long managerId);
+
+    boolean existsByTitle(String title);
 }

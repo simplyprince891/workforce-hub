@@ -14,4 +14,5 @@ public interface SubtaskRepository extends JpaRepository<Subtask, Long> {
     List<Subtask> findByTaskIdAndIsCompleted(Long taskId, Boolean isCompleted);
     
     Long countByTaskIdAndIsCompleted(Long taskId, Boolean isCompleted);
+    void deleteByTaskId(Long taskId);
 }

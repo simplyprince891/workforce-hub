@@ -3,10 +3,8 @@ package com.workforce.workforcehub.service;
 import com.workforce.workforcehub.dto.EmployeeRequest;
 import com.workforce.workforcehub.dto.EmployeeResponse;
 import com.workforce.workforcehub.dto.PagedResponse;
-import com.workforce.workforcehub.entity.Employee;
-import com.workforce.workforcehub.entity.Team;
-import com.workforce.workforcehub.repository.EmployeeRepository;
-import com.workforce.workforcehub.repository.TeamRepository;
+import com.workforce.workforcehub.entity.*;
+import com.workforce.workforcehub.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +24,9 @@ public class EmployeeService {
     
     private final EmployeeRepository employeeRepository;
     private final TeamRepository teamRepository;
+    private final TaskRepository taskRepository;
+    private final PayrollRepository payrollRepository;
+    private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
     
     @Transactional
@@ -41,7 +43,45 @@ public class EmployeeService {
         employee.setPassword(passwordEncoder.encode(request.getPassword()));
         
         Employee saved = employeeRepository.save(employee);
+        
+        // Post-registration seeding: Give them a welcome task and initial record
+        seedNewEmployeeData(saved);
+        
         return mapToResponse(saved);
+    }
+
+    private void seedNewEmployeeData(Employee employee) {
+        // 1. Welcome Task
+        Task welcomeTask = new Task();
+        welcomeTask.setTitle("Onboarding: Welcome to the Team!");
+        welcomeTask.setDescription("Complete your profile setup and introduce yourself on Slack.");
+        welcomeTask.setPriority("MEDIUM");
+        welcomeTask.setStatus("PENDING");
+        welcomeTask.setDeadline(LocalDate.now().plusDays(3));
+        welcomeTask.setAssignedTo(employee);
+        taskRepository.save(welcomeTask);
+
+        // 2. Initial Payroll Record (Current Month)
+        Payroll p = new Payroll();
+        p.setEmployee(employee);
+        p.setMonth(LocalDate.now().getMonthValue());
+        p.setYear(LocalDate.now().getYear());
+        p.setBaseSalary(employee.getSalary() != null ? employee.getSalary() : 500000.0);
+        p.setBonus(0.0);
+        p.setPfDeduction(p.getBaseSalary() * 0.12);
+        p.setTaxDeduction(p.getBaseSalary() * 0.1);
+        p.setTotalDeductions(p.getPfDeduction() + p.getTaxDeduction());
+        p.setNetSalary(p.getBaseSalary() - p.getTotalDeductions());
+        p.setStatus("DRAFT");
+        payrollRepository.save(p);
+
+        // 3. Today's initial attendance (Present by default for new joiner demo)
+        Attendance att = new Attendance();
+        att.setEmployee(employee);
+        att.setDate(LocalDate.now());
+        att.setStatus(Attendance.AttendanceStatus.PRESENT);
+        att.setCheckInTime(java.time.LocalTime.of(9, 0));
+        attendanceRepository.save(att);
     }
     
     @Transactional

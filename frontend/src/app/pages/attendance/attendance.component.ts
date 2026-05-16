@@ -26,6 +26,10 @@ import { AttendanceService, AttendanceResponse } from '../../services/attendance
             <div *ngIf="todayStatus?.checkOutTime" class="badge-premium badge-premium-green w-100 py-3">
               <i class="fas fa-check-circle me-2"></i> Shift Completed
             </div>
+
+            <button *ngIf="todayStatus?.checkInTime" class="btn btn-link btn-sm mt-3 text-muted" (click)="requestReset()">
+              <i class="fas fa-undo me-1"></i> Request Check-in Reset
+            </button>
             
             <div class="mt-4 small text-muted" *ngIf="todayStatus?.checkInTime">
               <i class="fas fa-clock me-1 text-success"></i> Working since {{ todayStatus?.checkInTime }}
@@ -57,7 +61,7 @@ import { AttendanceService, AttendanceResponse } from '../../services/attendance
             <div class="col-md-6">
               <div class="glass-card h-100">
                 <h6 class="small fw-bold text-muted text-uppercase mb-4">Work Hours</h6>
-                <div class="display-font fs-2 text-black">--h</div>
+                <div class="display-font fs-2 text-black">{{ totalWorkHours }}h</div>
                 <div class="x-small text-muted">Total hours logged this month</div>
                 <div class="mt-4 d-flex gap-2">
                   <span class="badge-premium badge-premium-green x-small">Policy: 8h/day</span>
@@ -65,6 +69,44 @@ import { AttendanceService, AttendanceResponse } from '../../services/attendance
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-0 mb-5 border-warning" *ngIf="isAdmin()">
+        <div class="p-4 border-bottom bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+          <h3 class="display-font fs-5 mb-0 text-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i> Pending Check-in Resets
+          </h3>
+          <button class="btn btn-sm btn-outline-warning" (click)="loadPendingResets()">
+            <i class="fas fa-sync-alt me-1"></i> Refresh
+          </button>
+        </div>
+        <div class="table-responsive p-3" *ngIf="pendingResets.length > 0">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Reason</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of pendingResets" class="animate-fade-in">
+                <td class="fw-bold">{{ r.employeeName }}</td>
+                <td class="small">{{ r.reason }}</td>
+                <td class="small text-muted">{{ r.targetDate }}</td>
+                <td>
+                  <button class="btn btn-sm btn-success px-3" (click)="approveReset(r.id)">
+                    Approve Reset
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="pendingResets.length === 0" class="p-4 text-center text-muted small">
+          No pending reset requests.
         </div>
       </div>
 
@@ -114,9 +156,11 @@ export class AttendanceComponent implements OnInit {
   currentUser = this.authService.getCurrentUser();
   todayStatus: AttendanceResponse | null = null;
   logs: AttendanceResponse[] = [];
+  pendingResets: any[] = [];
   
   presentDays = 0;
   absentDays = 0;
+  totalWorkHours = 0;
 
   constructor(
     private authService: AuthService, 
@@ -136,22 +180,58 @@ export class AttendanceComponent implements OnInit {
       this.attendanceService.getAllTodayLogs().subscribe(res => {
         this.logs = res;
       });
+      this.loadPendingResets();
     } else if (this.currentUser) {
       const empId = this.currentUser.employeeId;
       
-      // Get today's status
       this.attendanceService.getTodayStatus(empId).subscribe(res => {
         this.todayStatus = res;
       });
 
-      // Get month logs
       const now = new Date();
       this.attendanceService.getMonthLogs(empId, now.getMonth() + 1, now.getFullYear()).subscribe(res => {
         this.logs = res;
         this.presentDays = res.filter(l => l.status === 'PRESENT').length;
         this.absentDays = res.filter(l => l.status === 'ABSENT').length;
       });
+
+      // Fetch work hours
+      this.attendanceService.getWorkHours(empId, now.getMonth() + 1, now.getFullYear()).subscribe(hours => {
+        this.totalWorkHours = hours;
+      });
     }
+  }
+
+  loadPendingResets(): void {
+    this.attendanceService.getPendingResets().subscribe(res => {
+      this.pendingResets = res;
+    });
+  }
+
+  requestReset(): void {
+    if (!this.currentUser) return;
+    const reason = prompt('Please enter the reason for reset:');
+    if (!reason) return;
+
+    this.attendanceService.requestReset(this.currentUser.employeeId, reason).subscribe({
+      next: () => {
+        alert('Reset request sent to Admin.');
+      },
+      error: (err) => {
+        alert('Failed: ' + (err.error?.message || 'Server error'));
+      }
+    });
+  }
+
+  approveReset(requestId: number): void {
+    this.attendanceService.approveReset(requestId, 'Approved by Admin').subscribe({
+      next: () => {
+        this.loadData();
+      },
+      error: (err) => {
+        alert('Approval failed.');
+      }
+    });
   }
 
   checkIn(): void {
