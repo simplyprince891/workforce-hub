@@ -41,7 +41,7 @@ export class AttendanceService {
   }
 
   requestReset(employeeId: number, reason: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${employeeId}/request-reset`, reason);
+    return this.http.post(`${this.apiUrl}/${employeeId}/request-reset`, { reason });
   }
 
   getPendingResets(): Observable<any[]> {
@@ -49,7 +49,7 @@ export class AttendanceService {
   }
 
   approveReset(requestId: number, remarks: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/resets/approve/${requestId}`, remarks);
+    return this.http.post(`${this.apiUrl}/resets/approve/${requestId}`, { remarks });
   }
 
   getWorkHours(employeeId: number, month: number, year: number): Observable<number> {

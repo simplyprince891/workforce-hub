@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Team {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @NotBlank(message = "Team name is required")

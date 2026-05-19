@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../../components/layout/layout.component';
 import { AuthService } from '../../services/auth.service';
 import { AttendanceService, AttendanceResponse } from '../../services/attendance.service';
@@ -7,7 +8,7 @@ import { AttendanceService, AttendanceResponse } from '../../services/attendance
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule, LayoutComponent],
+  imports: [CommonModule, LayoutComponent, FormsModule],
   template: `
     <app-layout pageTitle="Attendance" pageSubtitle="Track presence and workday efficiency">
       <div class="row g-4 mb-5" *ngIf="!isAdmin()">
@@ -147,6 +148,36 @@ import { AttendanceService, AttendanceResponse } from '../../services/attendance
           </div>
         </div>
       </div>
+
+      <!-- Custom Check-in Reset Modal -->
+      <div class="modal-overlay-custom" *ngIf="showResetModal" (click)="closeResetModal()">
+        <div class="modal-content-premium" (click)="$event.stopPropagation()" style="max-width: 500px;">
+          <div class="modal-header-premium">
+            <h3 class="display-font fs-5 mb-0 text-dark">
+              <i class="fas fa-undo me-2 text-primary"></i> Request Attendance Reset
+            </h3>
+            <button class="btn-link text-muted p-0 border-0 bg-transparent" (click)="closeResetModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body-premium">
+            <p class="small text-muted mb-4">
+              Forgot to check out? Or had a biometric glitch? Request a check-in reset today. An admin will review and approve your request.
+            </p>
+            <div class="form-group mb-4">
+              <label class="form-label small fw-bold text-muted text-uppercase mb-2">Reason for Reset</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="resetReason" placeholder="Please explain the reason (e.g. forgot to check out yesterday)..." style="border-radius: 12px; font-size: 0.9rem; padding: 12px;"></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-end gap-3">
+              <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" (click)="closeResetModal()">Cancel</button>
+              <button type="button" class="btn-premium px-4" (click)="submitResetRequest()" [disabled]="!resetReason.trim()">
+                Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </app-layout>
   `
 })
@@ -161,6 +192,8 @@ export class AttendanceComponent implements OnInit {
   presentDays = 0;
   absentDays = 0;
   totalWorkHours = 0;
+  showResetModal = false;
+  resetReason = '';
 
   constructor(
     private authService: AuthService, 
@@ -209,15 +242,26 @@ export class AttendanceComponent implements OnInit {
   }
 
   requestReset(): void {
-    if (!this.currentUser) return;
-    const reason = prompt('Please enter the reason for reset:');
-    if (!reason) return;
+    this.resetReason = '';
+    this.showResetModal = true;
+    document.body.classList.add('modal-open');
+  }
 
-    this.attendanceService.requestReset(this.currentUser.employeeId, reason).subscribe({
+  closeResetModal(): void {
+    this.showResetModal = false;
+    document.body.classList.remove('modal-open');
+  }
+
+  submitResetRequest(): void {
+    if (!this.currentUser || !this.resetReason.trim()) return;
+
+    this.attendanceService.requestReset(this.currentUser.employeeId, this.resetReason).subscribe({
       next: () => {
+        this.closeResetModal();
         alert('Reset request sent to Admin.');
       },
       error: (err) => {
+        this.closeResetModal();
         alert('Failed: ' + (err.error?.message || 'Server error'));
       }
     });

@@ -9,14 +9,16 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "attendance")
+@Table(name = "attendance", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"employee_id", "date"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attendance {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @ToString.Exclude

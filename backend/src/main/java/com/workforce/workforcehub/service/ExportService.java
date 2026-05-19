@@ -212,4 +212,57 @@ public class ExportService {
         
         return outputStream.toByteArray();
     }
+
+    public byte[] exportEmployeesToCsv() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("ID,Name,Email,Age,Mobile,Username,Department,Salary,Role,Manager\n");
+        
+        for (int page = 0; page < 100; page++) {
+            var pagedResponse = employeeService.getAllEmployees(page, 100, "id", "asc");
+            for (EmployeeResponse emp : pagedResponse.getContent()) {
+                csv.append(emp.getId()).append(",");
+                csv.append(escapeCsv(emp.getName())).append(",");
+                csv.append(escapeCsv(emp.getEmail())).append(",");
+                csv.append(emp.getAge()).append(",");
+                csv.append(escapeCsv(emp.getMobile())).append(",");
+                csv.append(escapeCsv(emp.getUsername())).append(",");
+                csv.append(escapeCsv(emp.getDepartment())).append(",");
+                csv.append(emp.getSalary() != null ? emp.getSalary() : 0).append(",");
+                csv.append(escapeCsv(emp.getRole())).append(",");
+                csv.append(escapeCsv(emp.getManagerName())).append("\n");
+            }
+            if (pagedResponse.isLast()) break;
+        }
+        return csv.toString().getBytes();
+    }
+    
+    public byte[] exportTasksToCsv() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("ID,Title,Description,Assigned By,Assigned To,Priority,Status,Deadline,Created At\n");
+        
+        for (int page = 0; page < 100; page++) {
+            var pagedResponse = taskService.getAllTasks(page, 100);
+            for (TaskResponse task : pagedResponse.getContent()) {
+                csv.append(task.getId()).append(",");
+                csv.append(escapeCsv(task.getTitle())).append(",");
+                csv.append(escapeCsv(task.getDescription())).append(",");
+                csv.append(escapeCsv(task.getAssignedByName())).append(",");
+                csv.append(escapeCsv(task.getAssignedToName())).append(",");
+                csv.append(escapeCsv(task.getPriority())).append(",");
+                csv.append(escapeCsv(task.getStatus())).append(",");
+                csv.append(task.getDeadline() != null ? task.getDeadline().toString() : "").append(",");
+                csv.append(task.getCreatedAt() != null ? task.getCreatedAt().toString() : "").append("\n");
+            }
+            if (pagedResponse.isLast()) break;
+        }
+        return csv.toString().getBytes();
+    }
+    
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
 }

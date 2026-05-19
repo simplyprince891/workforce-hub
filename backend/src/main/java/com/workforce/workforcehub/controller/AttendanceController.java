@@ -65,8 +65,9 @@ public class AttendanceController {
     }
 
     @PostMapping("/{employeeId}/request-reset")
-    public ResponseEntity<?> requestReset(@PathVariable Long employeeId, @RequestBody String reason) {
+    public ResponseEntity<?> requestReset(@PathVariable Long employeeId, @RequestBody String body) {
         try {
+            String reason = parseStringPayload(body, "reason");
             return ResponseEntity.ok(com.workforce.workforcehub.dto.AttendanceResetRequestResponse.fromEntity(attendanceService.requestReset(employeeId, reason)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
@@ -81,8 +82,9 @@ public class AttendanceController {
     }
 
     @PostMapping("/resets/approve/{requestId}")
-    public ResponseEntity<?> approveReset(@PathVariable Long requestId, @RequestBody(required = false) String remarks) {
+    public ResponseEntity<?> approveReset(@PathVariable Long requestId, @RequestBody(required = false) String body) {
         try {
+            String remarks = parseStringPayload(body, "remarks");
             attendanceService.approveReset(requestId, remarks);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -96,6 +98,28 @@ public class AttendanceController {
             @RequestParam int month,
             @RequestParam int year) {
         return ResponseEntity.ok(attendanceService.getTotalWorkHoursForMonth(employeeId, month, year));
+    }
+
+    private String parseStringPayload(String body, String key) {
+        if (body == null || body.trim().isEmpty()) {
+            return "";
+        }
+        String trimmed = body.trim();
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(trimmed);
+                if (node.has(key)) {
+                    return node.get(key).asText();
+                }
+            } catch (Exception e) {
+                // fallback to raw body
+            }
+        }
+        if (trimmed.startsWith("\"") && trimmed.endsWith("\"") && trimmed.length() >= 2) {
+            return trimmed.substring(1, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 
     private record ErrorResponse(String message) {}

@@ -7,6 +7,7 @@ import { EmployeeService, EmployeeResponse } from '../../services/employee.servi
 import { AuthService } from '../../services/auth.service';
 import { LayoutComponent } from '../../components/layout/layout.component';
 import { HttpClient } from '@angular/common/http';
+import { ExportService } from '../../services/export.service';
 
 @Component({
   selector: 'app-tasks',
@@ -15,6 +16,9 @@ import { HttpClient } from '@angular/common/http';
   template: `
     <app-layout pageTitle="Tasks" pageSubtitle="Strategic tracking and execution">
       <div header-actions *ngIf="canManageTasks()">
+        <button class="btn-premium me-2" (click)="exportToExcel()" style="height: 3rem; --color: #2563eb; border-color: #2563eb;">
+          <i class="fas fa-file-excel me-2"></i> Export Excel
+        </button>
         <button class="btn-premium" (click)="openCreateModal()" style="height: 3rem;">
           <i class="fas fa-plus me-2"></i> Create Task
         </button>
@@ -154,7 +158,8 @@ export class TasksComponent implements OnInit {
     private taskService: TaskService,
     private employeeService: EmployeeService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private exportService: ExportService
   ) {}
 
   ngOnInit(): void {
@@ -249,6 +254,12 @@ export class TasksComponent implements OnInit {
   getPriorityClass(priority: string): string {
     const map: any = { 'HIGH': 'badge-danger', 'MEDIUM': 'badge-warning', 'LOW': 'badge-info' };
     return map[priority] || 'badge-secondary';
+  }
+
+  exportToExcel(): void {
+    this.exportService.exportTasksExcel().subscribe(blob => {
+      this.exportService.downloadFile(blob, 'tasks_report.xlsx');
+    });
   }
 
   canManageTasks(): boolean {

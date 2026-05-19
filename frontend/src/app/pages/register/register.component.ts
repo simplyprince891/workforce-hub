@@ -10,7 +10,7 @@ import { AuthService, EmployeeRequest } from '../../services/auth.service';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="auth-container">
-      <div class="auth-card">
+      <div class="auth-card animate-fade-up">
         <div class="text-center mb-4">
           <h2 class="auth-title display-font">Join Us</h2>
           <p class="auth-subtitle">Create your OpsFlow account</p>

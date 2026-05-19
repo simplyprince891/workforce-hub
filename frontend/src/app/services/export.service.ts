@@ -24,12 +24,28 @@ export class ExportService {
     return this.http.get(`${this.apiUrl}/tasks/excel`, { responseType: 'blob' });
   }
 
-  downloadFile(blob: Blob, filename: string): void {
+  downloadFile(data: Blob, filename: string): void {
+    const blob = new Blob([data], { type: data.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    if ((window.navigator as any).msSaveOrOpenBlob) {
+      (window.navigator as any).msSaveOrOpenBlob(blob, filename);
+      return;
+    }
+
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.style.display = 'none';
     a.href = url;
     a.download = filename;
+    a.target = '_blank';
     a.click();
-    window.URL.revokeObjectURL(url);
+    
+    setTimeout(() => {
+      if (document.body.contains(a)) {
+        document.body.removeChild(a);
+      }
+      window.URL.revokeObjectURL(url);
+    }, 15000); // 15 seconds to be safe
   }
-}
+}

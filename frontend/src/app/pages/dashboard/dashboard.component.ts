@@ -14,14 +14,33 @@ import { LayoutComponent } from '../../components/layout/layout.component';
   imports: [CommonModule, RouterLink, LayoutComponent],
   template: `
     <app-layout pageTitle="Overview" pageSubtitle="Tracking progress and operations">
-      <div header-actions *ngIf="canExport()" class="d-flex gap-2">
-        <button class="btn btn-outline-dark btn-sm rounded-pill px-3" (click)="exportEmployees('pdf')">
-          <i class="fas fa-file-pdf me-2"></i> Employees PDF
-        </button>
-        <button class="btn btn-dark btn-sm rounded-pill px-3" (click)="exportTasks('pdf')">
-          <i class="fas fa-file-export me-2"></i> Tasks PDF
-        </button>
+      <div header-actions *ngIf="canExport()" class="d-flex align-items-center gap-3">
+        
+        <!-- Employees Export Dropdown -->
+        <div class="position-relative" *ngIf="isAdmin() || isManager()" (mouseenter)="showEmpDropdown = true" (mouseleave)="showEmpDropdown = false">
+          <button class="btn-premium" style="height: 2.5rem; --color: #2563eb; border-color: #2563eb; line-height: 2.3rem;">
+            <i class="fas fa-users me-2"></i> Export Employees <i class="fas fa-chevron-down ms-1" style="font-size: 0.8rem;"></i>
+          </button>
+          <div class="position-absolute bg-white shadow rounded-3 border p-2 mt-1 animate-fade-in" style="z-index: 1000; min-width: 100%; right: 0;" *ngIf="showEmpDropdown">
+            <button class="btn btn-light w-100 text-start mb-1 btn-sm rounded" (click)="exportEmployees('pdf')"><i class="fas fa-file-pdf text-danger me-2"></i> PDF Format</button>
+            <button class="btn btn-light w-100 text-start btn-sm rounded" (click)="exportEmployees('excel')"><i class="fas fa-file-excel text-primary me-2"></i> Excel Format</button>
+          </div>
+        </div>
+
+        <!-- Tasks Export Dropdown -->
+        <div class="position-relative" (mouseenter)="showTaskDropdown = true" (mouseleave)="showTaskDropdown = false">
+          <button class="btn-premium" style="height: 2.5rem; --color: #2563eb; border-color: #2563eb; line-height: 2.3rem;">
+            <i class="fas fa-tasks me-2"></i> Export Tasks <i class="fas fa-chevron-down ms-1" style="font-size: 0.8rem;"></i>
+          </button>
+          <div class="position-absolute bg-white shadow rounded-3 border p-2 mt-1 animate-fade-in" style="z-index: 1000; min-width: 100%; right: 0;" *ngIf="showTaskDropdown">
+            <button class="btn btn-light w-100 text-start mb-1 btn-sm rounded" (click)="exportTasks('pdf')"><i class="fas fa-file-pdf text-danger me-2"></i> PDF Format</button>
+            <button class="btn btn-light w-100 text-start btn-sm rounded" (click)="exportTasks('excel')"><i class="fas fa-file-excel text-primary me-2"></i> Excel Format</button>
+          </div>
+        </div>
+
       </div>
+
+
 
       <!-- Stats Grid -->
       <div class="row g-4 mb-5">
@@ -169,6 +188,9 @@ export class DashboardComponent implements OnInit {
   
   recentTasks: TaskResponse[] = [];
   currentUser = this.authService.getCurrentUser();
+  
+  showEmpDropdown = false;
+  showTaskDropdown = false;
 
   constructor(
     private taskService: TaskService,

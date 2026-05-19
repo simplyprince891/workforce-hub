@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { EmployeeService, EmployeeResponse, PagedResponse } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
 import { LayoutComponent } from '../../components/layout/layout.component';
+import { ExportService } from '../../services/export.service';
 
 @Component({
   selector: 'app-employees',
@@ -13,7 +14,10 @@ import { LayoutComponent } from '../../components/layout/layout.component';
   template: `
     <app-layout pageTitle="Staff Directory" pageSubtitle="Monitoring and managing the organization">
       <div header-actions>
-        <a routerLink="/employees/add" class="btn btn-dark btn-sm rounded-pill px-3" *ngIf="canAddEmployee()">
+        <button class="btn-premium me-2" (click)="exportToExcel()" style="height: 2.5rem; --color: #2563eb; border-color: #2563eb; line-height: 2.3rem;" *ngIf="isAdmin() || isManager()">
+          <i class="fas fa-file-excel me-2"></i> Export Excel
+        </button>
+        <a routerLink="/employees/add" class="btn btn-dark btn-sm rounded-pill px-3" *ngIf="canAddEmployee()" style="height: 2.5rem; display: inline-flex; align-items: center;">
           <i class="fas fa-user-plus me-2"></i> Add Employee
         </a>
       </div>
@@ -128,7 +132,11 @@ export class EmployeesComponent implements OnInit {
   filterDept = '';
   currentUser = this.authService.getCurrentUser();
 
-  constructor(private employeeService: EmployeeService, private authService: AuthService) {}
+  constructor(
+    private employeeService: EmployeeService, 
+    private authService: AuthService,
+    private exportService: ExportService
+  ) {}
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -180,6 +188,12 @@ export class EmployeesComponent implements OnInit {
   getRoleClass(role: string): string {
     const map: any = { 'ADMIN': 'badge-premium-red', 'MANAGER': 'badge-premium-blue', 'TEAM_LEAD': 'badge-premium-blue', 'EMPLOYEE': 'badge-premium-green' };
     return map[role] || 'badge-secondary';
+  }
+
+  exportToExcel(): void {
+    this.exportService.exportEmployeesExcel().subscribe(blob => {
+      this.exportService.downloadFile(blob, 'employees_report.xlsx');
+    });
   }
 
   isAdmin(): boolean {

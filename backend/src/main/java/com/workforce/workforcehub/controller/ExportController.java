@@ -26,7 +26,7 @@ public class ExportController {
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "employees.pdf");
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"employees.pdf\"");
         
         return ResponseEntity.ok()
                 .headers(headers)
@@ -41,7 +41,7 @@ public class ExportController {
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "tasks.pdf");
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"tasks.pdf\"");
         
         return ResponseEntity.ok()
                 .headers(headers)
@@ -55,8 +55,8 @@ public class ExportController {
         byte[] excelBytes = exportService.exportEmployeesToExcel();
         
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "employees.xlsx");
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"employees.xlsx\"");
         
         return ResponseEntity.ok()
                 .headers(headers)
@@ -70,11 +70,11 @@ public class ExportController {
         byte[] excelBytes = exportService.exportTasksToExcel();
         
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "tasks.xlsx");
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"tasks.xlsx\"");
         
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(excelBytes);
     }
-}
+}

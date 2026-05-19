@@ -10,10 +10,12 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="auth-container">
-      <div class="auth-card">
+      <div class="auth-card animate-fade-up">
         <div class="text-center mb-5">
-          <div class="logo-icon bg-black text-white rounded d-inline-flex align-items-center justify-content-center mb-4" style="width: 48px; height: 48px; font-size: 1.5rem;">
-            <i class="fas fa-bolt"></i>
+          <div class="logo-icon-glow mb-4">
+            <div class="logo-icon bg-black text-white rounded d-inline-flex align-items-center justify-content-center" style="width: 56px; height: 56px; font-size: 1.8rem;">
+              <i class="fas fa-bolt"></i>
+            </div>
           </div>
           <h2 class="auth-title display-font">OpsFlow</h2>
           <p class="auth-subtitle">Operations Management</p>
